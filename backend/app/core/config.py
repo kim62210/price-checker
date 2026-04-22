@@ -41,7 +41,6 @@ class Settings(BaseSettings):
     detail_cache_ttl_seconds: int = Field(default=6 * 3600, ge=0)
     option_cache_ttl_seconds: int = Field(default=24 * 3600, ge=0)
 
-    playwright_concurrency: int = Field(default=2, ge=1, le=16)
     request_jitter_min_ms: int = Field(default=500, ge=0)
     request_jitter_max_ms: int = Field(default=2_000, ge=0)
 

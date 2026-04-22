@@ -23,18 +23,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/install/lib/python3.12/site-packages
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libnss3 libatk1.0-0 libatk-bridge2.0-0 libx11-6 libxcomposite1 \
-        libxdamage1 libxrandr2 libgbm1 libxkbcommon0 libpango-1.0-0 \
-        libasound2 fonts-noto-cjk \
+    && apt-get install -y --no-install-recommends fonts-noto-cjk \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /install /install
 WORKDIR /app
 COPY app ./app
 COPY alembic.ini ./
-
-RUN python -m playwright install chromium
 
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
