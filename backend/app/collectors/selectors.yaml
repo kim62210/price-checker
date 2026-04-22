@@ -1,0 +1,27 @@
+# 플랫폼별 DOM/JSON 선택자 외부화. 구조 변경 시 이 파일만 수정.
+
+coupang:
+  search:
+    list_item: "ul#productList > li.search-product, li.baby-product.renew-badge"
+    product_link: "a.search-product-link"
+    name: "div.name"
+    price_value: "strong.price-value"
+    price_wrap: "div.price-area"
+    thumbnail: "img.search-product-wrap-img"
+    rocket_badge: "span.badge.rocket"
+    ad_badge: "span.ad-badge-text"
+    total_count: "div.result-info"
+  detail:
+    price: "span.total-price strong, span.price-value"
+    name: "h1.prod-buy-header__title, h2.prod-buy-header__title"
+    options: "li[data-vendor-item-id]"
+    shipping_fee: "span.prod-txt-shipping, div.prod-txt-shipping-fee"
+
+naver:
+  search_api:
+    endpoint: "https://openapi.naver.com/v1/search/shop.json"
+  detail_spa:
+    option_button: "div._3_FV10Iuc"
+    option_list: "ul._1QbYtcAdoX li"
+    price: "div._1LY7DqCnwR strong"
+    shipping: "div._1gXqIM6PYO"
