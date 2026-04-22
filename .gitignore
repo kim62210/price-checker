@@ -47,9 +47,8 @@ coverage.xml
 .env
 .env.*.local
 
-# Alembic
-backend/app/db/migrations/versions/*.py
-!backend/app/db/migrations/versions/.gitkeep
+# Alembic (autogenerate 이후 커밋)
+# backend/app/db/migrations/versions/*.py  # 필요 시 주석 해제
 
 # Docker volumes
 .postgres_data/
