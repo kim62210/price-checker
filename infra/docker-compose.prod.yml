@@ -1,0 +1,96 @@
+# 서버(OCI ARM) 배포용 Compose.
+# - 기존 `infra_default` 네트워크에 backend/streamlit 을 조인해 Caddy 리버스 프록시와 통신
+# - postgres/redis 는 내부 전용 네트워크 + 호스트 포트 미노출
+# - 루트의 `.env` 에서 NAVER_CLIENT_ID 등 민감 값 로드
+
+name: price-tracker
+
+networks:
+  internal:
+    driver: bridge
+  infra_default:
+    external: true
+
+volumes:
+  postgres_data:
+  redis_data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: price-tracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lowestprice
+      POSTGRES_PASSWORD: lowestprice
+      POSTGRES_DB: lowestprice
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lowestprice -d lowestprice"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: price-tracker-redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: price-tracker-backend:latest
+    container_name: price-tracker-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lowestprice:lowestprice@postgres:5432/lowestprice
+      REDIS_URL: redis://redis:6379/0
+      ENVIRONMENT: prod
+      CORS_ALLOW_ORIGINS: https://price-tracker.brian-dev.cloud
+    networks:
+      - internal
+      - infra_default
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+
+  streamlit:
+    image: price-tracker-backend:latest
+    container_name: price-tracker-streamlit
+    restart: unless-stopped
+    depends_on:
+      - backend
+    env_file:
+      - ../.env
+    environment:
+      LOWEST_PRICE_API_BASE: http://price-tracker-backend:8000
+    networks:
+      - infra_default
+    command:
+      - streamlit
+      - run
+      - app/ui/streamlit_app.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+      - --server.enableCORS=false
+      - --server.enableXsrfProtection=false
+      - --browser.gatherUsageStats=false
