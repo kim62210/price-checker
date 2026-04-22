@@ -14,7 +14,6 @@ cp .env.example .env
 # NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 채우기
 
 make install
-make install-playwright
 make migrate
 make dev             # Docker Compose 로 전체 스택 기동
 # 또는

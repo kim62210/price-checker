@@ -1,4 +1,4 @@
-.PHONY: help install install-playwright dev dev-api dev-ui test lint format typecheck migrate revision up down logs clean
+.PHONY: help install dev dev-api dev-ui test lint format typecheck migrate revision up down logs clean
 
 BACKEND_DIR := backend
 COMPOSE_FILE := infra/docker-compose.yml
@@ -6,7 +6,6 @@ COMPOSE_FILE := infra/docker-compose.yml
 help:
 	@echo "사용 가능한 타겟:"
 	@echo "  install            - 백엔드 의존성 설치 (pip + dev + ui)"
-	@echo "  install-playwright - Playwright 브라우저 설치"
 	@echo "  dev                - Docker Compose 로 전체 스택 기동"
 	@echo "  dev-api            - 로컬 uvicorn 기동"
 	@echo "  dev-ui             - Streamlit UI 기동"
@@ -23,9 +22,6 @@ help:
 
 install:
 	cd $(BACKEND_DIR) && pip install -e '.[dev,ui]'
-
-install-playwright:
-	cd $(BACKEND_DIR) && python -m playwright install chromium
 
 dev: up
 	@echo "스택 기동 완료. API: http://localhost:8000, UI: http://localhost:8501"
