@@ -28,7 +28,14 @@ logger = get_logger(__name__)
 
 COUPANG_BASE = "https://www.coupang.com"
 COUPANG_SEARCH = f"{COUPANG_BASE}/np/search"
-BLOCK_MARKERS = ("Pardon Our Interruption", "Access Denied", "Reference #")
+# 쿠팡 봇 차단 페이지의 다양한 변종 (대소문자 무시 매칭)
+BLOCK_MARKERS = (
+    "pardon our interruption",
+    "access denied",
+    "sorry! access denied",
+    "reference #",
+    "to discuss automated access",
+)
 
 _PRICE_RE = re.compile(r"[^\d]")
 
@@ -102,7 +109,7 @@ class CoupangCollector(Collector):
         return response.text
 
     def _raise_if_blocked(self, html: str) -> None:
-        snippet = html[:3000]
+        snippet = html[:5000].lower()
         if any(marker in snippet for marker in BLOCK_MARKERS):
             raise BotBlockedError(detail="coupang_block_page")
 

@@ -27,7 +27,13 @@ from app.services.shipping_policy import estimate_coupang_rocket
 logger = get_logger(__name__)
 
 _SDP_RE = re.compile(r"exports\.sdp\s*=\s*(\{.+?\});", re.DOTALL)
-_BLOCK_MARKERS = ("Pardon Our Interruption", "Access Denied", "Reference #")
+_BLOCK_MARKERS = (
+    "pardon our interruption",
+    "access denied",
+    "sorry! access denied",
+    "reference #",
+    "to discuss automated access",
+)
 
 
 def _fallback_detail(listing: ListingDTO) -> DetailDTO:
@@ -178,7 +184,7 @@ async def _fetch_html(listing: ListingDTO) -> tuple[str | None, FetchMethod]:
         logger.info("coupang_detail_http_error", error=str(exc))
         return None, "static"
 
-    if any(marker in html[:3000] for marker in _BLOCK_MARKERS):
+    if any(marker in html[:5000].lower() for marker in _BLOCK_MARKERS):
         await record_failure("coupang")
         raise BotBlockedError(detail="coupang_detail_blocked")
     return html, "static"
