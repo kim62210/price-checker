@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lowest-price-postgres
+    environment:
+      POSTGRES_USER: lowestprice
+      POSTGRES_PASSWORD: lowestprice
+      POSTGRES_DB: lowestprice
+    ports:
+      - "5432:5432"
+    volumes:
+      - ../.postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lowestprice -d lowestprice"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: lowest-price-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - ../.redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: lowest-price-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    env_file:
+      - ../.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://lowestprice:lowestprice@postgres:5432/lowestprice
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+  streamlit:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: lowest-price-streamlit
+    depends_on:
+      - backend
+    env_file:
+      - ../.env
+    environment:
+      LOWEST_PRICE_API_BASE: http://backend:8000
+    ports:
+      - "8501:8501"
+    command:
+      [
+        "streamlit",
+        "run",
+        "app/ui/streamlit_app.py",
+        "--server.address",
+        "0.0.0.0",
+        "--server.port",
+        "8501",
+        "--browser.gatherUsageStats",
+        "false",
+      ]
