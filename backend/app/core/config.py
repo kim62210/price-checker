@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     naver_rpm: int = Field(default=30, ge=1, le=600)
     naver_daily_quota: int = Field(default=25_000, ge=1)
     coupang_rpm: int = Field(default=10, ge=1, le=600)
+    coupang_scraper_url: str = Field(
+        default="http://100.70.111.100:8081",
+        description="Mac mini CDP 기반 쿠팡 스크레이퍼 엔드포인트 (Tailnet)",
+    )
+    coupang_scraper_timeout_seconds: float = Field(default=45.0, ge=1.0, le=120.0)
 
     database_url: str = Field(default="postgresql+asyncpg://lowestprice:lowestprice@localhost:5432/lowestprice")
     redis_url: str = Field(default="redis://localhost:6379/0")
