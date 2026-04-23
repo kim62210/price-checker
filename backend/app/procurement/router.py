@@ -51,7 +51,11 @@ async def create_order(
 ) -> OrderRead:
     service = _service(session)
     try:
-        order = await service.create_order(tenant_id=tenant.id, payload=payload)
+        order = await service.create_order(
+            tenant_id=tenant.id,
+            monthly_quota=tenant.api_quota_monthly,
+            payload=payload,
+        )
     except ShopNotFoundError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -122,6 +126,7 @@ async def upload_order_result(
     try:
         record = await service.upload_result(
             tenant_id=tenant.id,
+            monthly_quota=tenant.api_quota_monthly,
             order_id=order_id,
             payload=payload,
         )

@@ -36,10 +36,10 @@
 
 ## 5. services/search_service.py 재설계
 
-- [ ] 5.1 기존 크롤링 오케스트레이션 코드(`_collect_naver`, `_collect_coupang`, `_enrich_details`) 전부 제거
-- [ ] 5.2 입력을 `tenant_id` + 업로드된 `procurement_results` 로 바꾸고 파서·배송비·랭킹만 수행
-- [ ] 5.3 응답 캐시 키에 `tenant_id` 네임스페이스 포함 (`search:{tenant_id}:{md5(query|limit)}`)
-- [ ] 5.4 테스트 재작성 (`tests/test_services/test_search_service.py`)
+- [x] 5.1 기존 크롤링 오케스트레이션 코드(`_collect_naver`, `_collect_coupang`, `_enrich_details`) 전부 제거
+- [x] 5.2 입력을 `tenant_id` + 업로드된 `procurement_results` 로 바꾸고 파서·배송비·랭킹만 수행
+- [x] 5.3 응답 캐시 키에 `tenant_id` 네임스페이스 포함 (`search:{tenant_id}:{md5(query|limit)}`)
+- [ ] 5.4 테스트 재작성 (`tests/test_services/test_search_service.py`) — Wave 4 에서 처리
 
 ## 6. collectors/ 디렉토리 전체 삭제
 
@@ -70,27 +70,27 @@
 
 ## 10. api/v1/router.py 인증 미들웨어 적용
 
-- [ ] 10.1 `api/v1/router.py` 에서 `tenancy.router`, `auth.router`, `procurement.router` 통합
-- [ ] 10.2 `/api/v1/auth/**`, `/api/v1/health/**` 외 모든 라우트에 `Depends(get_current_tenant)` 의존성 적용
-- [ ] 10.3 `api/v1/search.py` — `tenant: Annotated[Tenant, Depends(get_current_tenant)]` 인자로 변경, 서비스 호출 시 `tenant_id` 전달
-- [ ] 10.4 `middleware.py` 에 `tenant_id` 구조화 로그 contextvars 주입 로직 추가 (structlog)
+- [x] 10.1 `api/v1/router.py` 에서 `tenancy.router`, `auth.router`, `procurement.router` 통합
+- [x] 10.2 `/api/v1/auth/**`, `/api/v1/health/**` 외 모든 라우트에 `Depends(get_current_tenant)` 의존성 적용
+- [x] 10.3 `api/v1/search.py` — `tenant: Annotated[Tenant, Depends(get_current_tenant)]` 인자로 변경, 서비스 호출 시 `tenant_id` 전달
+- [x] 10.4 `middleware.py` 에 `tenant_id` 구조화 로그 contextvars 주입 로직 추가 (structlog)
 
 ## 11. quota_service.py 재설계 (테넌트별 월간)
 
-- [ ] 11.1 기존 `naver:quota:<YYYYMMDD>` 일일 카운터 로직 제거
-- [ ] 11.2 `quota:tenant:{tenant_id}:{YYYYMM}` 키 + `INCR` + `EXPIREAT` 다음달 1일 00:00 KST
-- [ ] 11.3 `check_and_consume(tenant_id, monthly_quota)` 메서드 — 초과 시 `QuotaExceededError` 발생
-- [ ] 11.4 `services/search_service.py`·`procurement/service.py` 업로드 호출 시 훅 연결
+- [x] 11.1 기존 `naver:quota:<YYYYMMDD>` 일일 카운터 로직 제거
+- [x] 11.2 `quota:tenant:{tenant_id}:{YYYYMM}` 키 + `INCR` + `EXPIREAT` 다음달 1일 00:00 KST
+- [x] 11.3 `check_and_consume(tenant_id, monthly_quota)` 메서드 — 초과 시 `QuotaExceededError` 발생
+- [x] 11.4 `services/search_service.py`·`procurement/service.py` 업로드 호출 시 훅 연결
 
 ## 12. cache_service.py 업데이트
 
-- [ ] 12.1 모든 `get`/`set` 시그니처에 `tenant_id: int` 필수 파라미터 추가
-- [ ] 12.2 캐시 키 네임스페이스를 `"tenant:{tenant_id}:" + key` 형식으로 강제
+- [x] 12.1 모든 `get`/`set` 시그니처에 `tenant_id: int` 필수 파라미터 추가
+- [x] 12.2 캐시 키 네임스페이스를 `"tenant:{tenant_id}:" + key` 형식으로 강제
 
 ## 13. option_parser.py 업데이트
 
-- [ ] 13.1 입력 소스 docstring/타입 주석을 "크롤러 HTML" → "클라이언트가 업로드한 옵션 텍스트" 로 수정
-- [ ] 13.2 `option_text_cache` 캐시 조회 시 `tenant_id` 스코프 키 도입 (전역 캐시 vs 테넌트별 — 전역 유지하되 로그 차원에서 `tenant_id` 기록)
+- [x] 13.1 입력 소스 docstring/타입 주석을 "크롤러 HTML" → "클라이언트가 업로드한 옵션 텍스트" 로 수정
+- [x] 13.2 `option_text_cache` 캐시 조회 시 `tenant_id` 스코프 키 도입 (전역 캐시 vs 테넌트별 — 전역 유지하되 로그 차원에서 `tenant_id` 기록)
 
 ## 14. models/listing.py 수정
 

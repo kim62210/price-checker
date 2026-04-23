@@ -19,8 +19,6 @@ from app.core.middleware import register_middleware
 from app.db.session import get_engine
 from app.models import Base
 
-# TODO(wave3): search_service 재설계 시 http_client 훅을 다시 연결
-
 logger = get_logger(__name__)
 
 

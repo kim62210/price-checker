@@ -19,6 +19,7 @@ from typing import Annotated, Any
 
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from structlog.contextvars import bind_contextvars
 
 from app.core.logging import get_logger
 from app.db.session import get_db
@@ -108,6 +109,8 @@ async def get_current_user(
 
     request.state.user_id = user.id
     request.state.tenant_id = user.tenant_id
+    # 이후 발생하는 모든 structlog 이벤트에 tenant_id / user_id 가 자동 포함된다.
+    bind_contextvars(tenant_id=user.tenant_id, user_id=user.id)
     return user
 
 

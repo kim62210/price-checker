@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.logging import get_logger
 from app.procurement.models import ProcurementOrder, ProcurementResult
 from app.procurement.schemas import OrderCreate, ResultUpload, SummaryReport
+from app.services.quota_service import check_and_consume
 
 logger = get_logger(__name__)
 
@@ -41,15 +42,17 @@ class ProcurementService:
         self,
         *,
         tenant_id: int,
+        monthly_quota: int,
         payload: OrderCreate,
     ) -> ProcurementOrder:
         """발주 생성.
 
         - ``payload.shop_id`` 가 현재 테넌트 소속인지 검증 후 생성한다.
         - 소속 검증 실패 시 :class:`ShopNotFoundError` 를 발생시킨다.
+        - 월간 쿼터 초과 시 :class:`QuotaExceededError` 를 발생시킨다.
         """
 
-        # TODO(wave3): quota.check_and_consume(tenant_id, tenant.api_quota_monthly)
+        await check_and_consume(tenant_id, monthly_quota)
         await self._ensure_shop_belongs_to_tenant(
             tenant_id=tenant_id, shop_id=payload.shop_id
         )
@@ -122,15 +125,17 @@ class ProcurementService:
         self,
         *,
         tenant_id: int,
+        monthly_quota: int,
         order_id: int,
         payload: ResultUpload,
     ) -> ProcurementResult:
         """발주 결과 업로드.
 
         서버가 ``tenant_id`` 를 주문에서 복제하므로 클라이언트 body 값은 무시된다.
+        월간 쿼터 초과 시 :class:`QuotaExceededError` 를 발생시킨다.
         """
 
-        # TODO(wave3): quota.check_and_consume(tenant_id, tenant.api_quota_monthly)
+        await check_and_consume(tenant_id, monthly_quota)
         order = await self.get_order(tenant_id=tenant_id, order_id=order_id)
         if order is None:
             raise OrderNotFoundError
