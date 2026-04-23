@@ -28,11 +28,11 @@
 
 ## 4. procurement 모듈 신규
 
-- [ ] 4.1 `backend/app/procurement/__init__.py`
-- [ ] 4.2 `backend/app/procurement/models.py` — `ProcurementOrder`, `ProcurementResult`
-- [ ] 4.3 `backend/app/procurement/schemas.py` — `OrderCreate`, `OrderRead`, `ResultUpload`, `ResultRead`, `SummaryReport`
-- [ ] 4.4 `backend/app/procurement/service.py` — `create_order`, `list_orders`, `upload_result`, `list_results_by_order`, `aggregate_savings`
-- [ ] 4.5 `backend/app/procurement/router.py` — `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/results`, `GET /orders/{id}/results`, `GET /reports/summary`
+- [x] 4.1 `backend/app/procurement/__init__.py`
+- [x] 4.2 `backend/app/procurement/models.py` — `ProcurementOrder`, `ProcurementResult`
+- [x] 4.3 `backend/app/procurement/schemas.py` — `OrderCreate`, `OrderRead`, `ResultUpload`, `ResultRead`, `SummaryReport`
+- [x] 4.4 `backend/app/procurement/service.py` — `create_order`, `list_orders`, `upload_result`, `list_results_by_order`, `aggregate_savings`
+- [x] 4.5 `backend/app/procurement/router.py` — `POST /orders`, `GET /orders`, `GET /orders/{id}`, `POST /orders/{id}/results`, `GET /orders/{id}/results`, `GET /reports/summary`
 
 ## 5. services/search_service.py 재설계
 
