@@ -52,6 +52,42 @@ class Settings(BaseSettings):
     api_port: int = Field(default=8000, ge=1, le=65535)
     cors_allow_origins: str = Field(default="http://localhost:8501")
 
+    # ----- JWT -----
+    jwt_secret: SecretStr = Field(
+        default=SecretStr("change-me-in-prod"),
+        description="JWT HS256 서명 시크릿 (프로덕션 필수 재정의)",
+    )
+    jwt_algorithm: Literal["HS256"] = Field(default="HS256")
+    jwt_access_ttl_minutes: int = Field(default=30, ge=1)
+    jwt_refresh_ttl_days: int = Field(default=14, ge=1)
+
+    # ----- OAuth: Kakao -----
+    kakao_client_id: SecretStr = Field(
+        default=SecretStr(""), description="카카오 REST API 키"
+    )
+    kakao_client_secret: SecretStr = Field(
+        default=SecretStr(""), description="카카오 Client Secret (선택)"
+    )
+    kakao_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/kakao/callback",
+        description="카카오 OAuth 콜백 URL",
+    )
+
+    # ----- OAuth: Naver -----
+    naver_oauth_client_id: SecretStr = Field(
+        default=SecretStr(""), description="네이버 로그인 애플리케이션 Client ID"
+    )
+    naver_oauth_client_secret: SecretStr = Field(
+        default=SecretStr(""), description="네이버 로그인 Client Secret"
+    )
+    naver_oauth_redirect_uri: str = Field(
+        default="http://localhost:8000/api/v1/auth/naver/callback",
+        description="네이버 OAuth 콜백 URL",
+    )
+
+    # ----- Tenant defaults -----
+    default_tenant_api_quota_monthly: int = Field(default=10_000, ge=0)
+
     @property
     def cors_allow_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]

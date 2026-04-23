@@ -16,15 +16,15 @@
 
 ## 3. auth 모듈 신규
 
-- [ ] 3.1 `backend/app/auth/__init__.py`
-- [ ] 3.2 `backend/app/auth/models.py` — `RefreshToken(jti, user_id, expires_at, revoked_at)`
-- [ ] 3.3 `backend/app/auth/schemas.py` — `OAuthCallbackRequest`, `TokenPair`, `RefreshRequest`
-- [ ] 3.4 `backend/app/auth/jwt.py` — `encode_access_token`, `decode_access_token`, `encode_refresh_token`, `decode_refresh_token` (HS256)
-- [ ] 3.5 `backend/app/auth/kakao.py` — 카카오 OAuth `authorize_url` 빌더, `exchange_code`, `fetch_userinfo` (httpx)
-- [ ] 3.6 `backend/app/auth/naver.py` — 네이버 OAuth 동등 구현
-- [ ] 3.7 `backend/app/auth/service.py` — `AuthService.login_with_kakao/naver`: 프로바이더 userinfo → `find_or_create_tenant_and_user` → JWT 발급
-- [ ] 3.8 `backend/app/auth/router.py` — `GET /api/v1/auth/{provider}/login`, `GET /api/v1/auth/{provider}/callback`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`
-- [ ] 3.9 `backend/app/core/security.py` — JWT 인코딩·디코딩 저수준 헬퍼 + 비밀번호 해시 유틸(`bcrypt`)
+- [x] 3.1 `backend/app/auth/__init__.py`
+- [x] 3.2 `backend/app/auth/models.py` — `RefreshToken(jti, user_id, expires_at, revoked_at)`
+- [x] 3.3 `backend/app/auth/schemas.py` — `OAuthCallbackRequest`, `TokenPair`, `RefreshRequest`
+- [x] 3.4 `backend/app/auth/jwt.py` — `encode_access_token`, `decode_access_token`, `encode_refresh_token`, `decode_refresh_token` (HS256)
+- [x] 3.5 `backend/app/auth/kakao.py` — 카카오 OAuth `authorize_url` 빌더, `exchange_code`, `fetch_userinfo` (httpx)
+- [x] 3.6 `backend/app/auth/naver.py` — 네이버 OAuth 동등 구현
+- [x] 3.7 `backend/app/auth/service.py` — `AuthService.login_with_kakao/naver`: 프로바이더 userinfo → `find_or_create_tenant_and_user` → JWT 발급
+- [x] 3.8 `backend/app/auth/router.py` — `GET /api/v1/auth/{provider}/login`, `GET /api/v1/auth/{provider}/callback`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`
+- [x] 3.9 `backend/app/core/security.py` — JWT 인코딩·디코딩 저수준 헬퍼 + 비밀번호 해시 유틸(`bcrypt`)
 
 ## 4. procurement 모듈 신규
 
@@ -62,9 +62,9 @@
 
 ## 9. core/config.py 업데이트
 
-- [ ] 9.1 신규 설정 추가 — `JWT_SECRET`, `JWT_ALGORITHM` (기본 `HS256`), `JWT_ACCESS_TTL_MINUTES` (기본 30), `JWT_REFRESH_TTL_DAYS` (기본 14)
-- [ ] 9.2 OAuth 설정 추가 — `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI`, `NAVER_OAUTH_CLIENT_ID`, `NAVER_OAUTH_CLIENT_SECRET`, `NAVER_OAUTH_REDIRECT_URI`
-- [ ] 9.3 테넌트 설정 추가 — `DEFAULT_TENANT_API_QUOTA_MONTHLY` (기본 10000)
+- [x] 9.1 신규 설정 추가 — `JWT_SECRET`, `JWT_ALGORITHM` (기본 `HS256`), `JWT_ACCESS_TTL_MINUTES` (기본 30), `JWT_REFRESH_TTL_DAYS` (기본 14)
+- [x] 9.2 OAuth 설정 추가 — `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI`, `NAVER_OAUTH_CLIENT_ID`, `NAVER_OAUTH_CLIENT_SECRET`, `NAVER_OAUTH_REDIRECT_URI`
+- [x] 9.3 테넌트 설정 추가 — `DEFAULT_TENANT_API_QUOTA_MONTHLY` (기본 10000)
 - [ ] 9.4 구 설정 제거 — `NAVER_CLIENT_ID`/`NAVER_CLIENT_SECRET` (쇼핑 API 용), `PLAYWRIGHT_CONCURRENCY`, `NAVER_RPM`, `COUPANG_RPM`, `DETAIL_CACHE_TTL_SECONDS`, `SCRAPER_REMOTE_URL`
 - [ ] 9.5 `.env.example` 동기화
 

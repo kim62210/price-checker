@@ -1,9 +1,11 @@
-"""요청 헤더 보안 유틸 (User-Agent 풀, 랜덤 jitter)."""
+"""요청 헤더 보안 유틸 (User-Agent 풀, 랜덤 jitter) + 비밀번호 해시."""
 
 from __future__ import annotations
 
 import asyncio
 import random
+
+import bcrypt
 
 from app.core.config import Settings
 
@@ -46,3 +48,18 @@ async def random_jitter_sleep(settings: Settings) -> None:
     ms = random.randint(low, high)
     if ms > 0:
         await asyncio.sleep(ms / 1000.0)
+
+
+def hash_password(password: str) -> str:
+    """bcrypt 해시 생성 (`auth_provider='local'` 전용)."""
+    salt = bcrypt.gensalt()
+    digest = bcrypt.hashpw(password.encode("utf-8"), salt)
+    return digest.decode("utf-8")
+
+
+def verify_password(plain: str, hashed: str) -> bool:
+    """bcrypt 해시 검증."""
+    try:
+        return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    except ValueError:
+        return False
