@@ -1,9 +1,10 @@
 # lowest-price
 
-친구 몇 명이 쓰는 **네이버 스마트스토어 / 쿠팡 최저가 비교 도구**.
-상품 검색어 하나로 양쪽 플랫폼의 후보 상품을 모두 수집하고, 옵션 텍스트에서 실 수량을 역파싱해 **"배송비 포함 개당 실가"** 오름차순으로 정렬해 보여준다.
+B2B 조달 SaaS 백엔드 (**멀티테넌트 피벗 진행 중**).
 
-> **비공개 친구용 도구** — 외부 공개·상용화 용도 아님. 실 사용 시 각 플랫폼 이용약관을 존중해 저빈도로만 호출한다.
+테넌트별 발주 이력과 업로드된 상품 옵션 데이터를 기반으로 "배송비 포함 개당 실가" 오름차순 비교·리포트를 제공한다.
+
+> **피벗 상태**: `openspec/changes/pivot-backend-multi-tenant/` 변경 스펙에 따라 크롤링 기반 MVP 에서 인증·멀티테넌트·조달 업로드 구조로 전환 중. Wave 3 에서 `search_service`, `quota_service`, `cache_service`, `option_parser` 가 테넌트 스코프로 재설계된다.
 
 ---
 
@@ -11,33 +12,37 @@
 
 ```bash
 cp .env.example .env
-# NAVER_CLIENT_ID / NAVER_CLIENT_SECRET 채우기
+# 최소 DATABASE_URL / REDIS_URL / JWT_SECRET 을 채운다
+# 카카오/네이버 OAuth 로 로그인하려면 OAuth 시크릿도 함께 설정
 
 make install
 make migrate
-make dev             # Docker Compose 로 전체 스택 기동
+make dev             # Docker Compose 로 postgres/redis/backend 기동
 # 또는
-make dev-api         # API 만
-make dev-ui          # Streamlit UI 만
+make dev-api         # 로컬 uvicorn 만
 ```
 
 - API 기본 주소: `http://localhost:8000`
-- UI 기본 주소: `http://localhost:8501`
 - 헬스 체크: `curl http://localhost:8000/health/live`
 
-## 주요 엔드포인트
+## 주요 엔드포인트 (Wave 1 기준)
 
-- `GET /api/v1/search?q=<keyword>&limit=<n>` — 네이버·쿠팡 병렬 수집 + 개당 실가 정렬 결과
+- `GET /api/v1/auth/{provider}/login` — 카카오·네이버 OAuth 진입점
+- `GET /api/v1/auth/{provider}/callback`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`
+- `/api/v1/tenants/me`, `/api/v1/shops`, `/api/v1/users`
+- `POST /api/v1/orders`, `GET /api/v1/orders`, `POST /api/v1/orders/{id}/results` 등 조달 오더
 - `GET /health/live`, `GET /health/ready`
+
+> `GET /api/v1/search` 는 Wave 3 재설계 완료 전까지 비활성 상태.
 
 ## 필수 환경변수
 
-`.env.example` 참조. 최소 `NAVER_CLIENT_ID`, `NAVER_CLIENT_SECRET`, `DATABASE_URL`, `REDIS_URL` 은 지정해야 기동한다.
+`.env.example` 참조. 최소 `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET` 은 지정해야 기동한다. OAuth 로그인을 쓰려면 `KAKAO_CLIENT_ID`, `NAVER_OAUTH_CLIENT_ID` 등 OAuth 시크릿 값도 함께 설정한다.
 
 ## 문서
 
 - [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) — 조사 결과와 핵심 제약
-- [openspec/changes/add-lowest-price-mvp/](./openspec/changes/add-lowest-price-mvp/) — MVP 변경 스펙 (proposal / design / specs / tasks)
+- [openspec/changes/pivot-backend-multi-tenant/](./openspec/changes/pivot-backend-multi-tenant/) — B2B 멀티테넌트 피벗 스펙 (proposal / design / specs / tasks)
 
 ## 테스트
 
@@ -45,17 +50,8 @@ make dev-ui          # Streamlit UI 만
 make test
 ```
 
-- 정규식 파서 파라미터라이즈 케이스, 개당 실가 계산, 랭킹, 배송비 정책, 캐시 키, 토큰 버킷 등 핵심 모듈 단위 테스트 포함.
-- 커버리지 80% 이상을 목표로 하지만, 초기 구현에서는 수집기/상세 페이지 실망 네트워크 의존성 테스트는 VCR/respx 추가가 필요하다(후속 작업).
-
-## 교차검증이 필요한 항목
-
-운영 전 다음을 공식 문서에서 직접 재확인한다.
-
-- 네이버 쇼핑 API `productType` 숫자 코드 매핑
-- 네이버 검색 API 이용 시 로고·출처 표기 의무
-- 쿠팡 상세 페이지 접근 차단 빈도 (실측)
-- LLM 폴백 월 토큰 한도 설정 적정성
+- 정규식 파서, 개당 실가 계산, 랭킹, 배송비 정책, 캐시 키 등 재사용 가능한 모듈 단위 테스트 유지
+- Wave 4 에서 tenancy / auth / procurement 신규 모듈 테스트 및 커버리지 80% 목표 달성 예정
 
 ## 라이선스
 
