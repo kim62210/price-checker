@@ -1,10 +1,10 @@
 # lowest-price
 
-B2B 조달 SaaS 백엔드 (**멀티테넌트 피벗 진행 중**).
+B2B 조달 SaaS 백엔드 (**멀티테넌트 피벗 완료**).
 
 테넌트별 발주 이력과 업로드된 상품 옵션 데이터를 기반으로 "배송비 포함 개당 실가" 오름차순 비교·리포트를 제공한다.
 
-> **피벗 상태**: `openspec/changes/pivot-backend-multi-tenant/` 변경 스펙에 따라 크롤링 기반 MVP 에서 인증·멀티테넌트·조달 업로드 구조로 전환 중. Wave 3 에서 `search_service`, `quota_service`, `cache_service`, `option_parser` 가 테넌트 스코프로 재설계된다.
+> **피벗 완료**: `openspec/changes/pivot-backend-multi-tenant/` 변경 스펙의 Wave 1~4 구현이 모두 반영됐다. 크롤링 기반 MVP 에서 JWT + 카카오/네이버 OAuth 인증·멀티테넌트·조달 업로드·테넌트 스코프 검색 구조로 전환됐다.
 
 ---
 
@@ -25,15 +25,35 @@ make dev-api         # 로컬 uvicorn 만
 - API 기본 주소: `http://localhost:8000`
 - 헬스 체크: `curl http://localhost:8000/health/live`
 
-## 주요 엔드포인트 (Wave 1 기준)
+## 주요 엔드포인트
 
-- `GET /api/v1/auth/{provider}/login` — 카카오·네이버 OAuth 진입점
-- `GET /api/v1/auth/{provider}/callback`, `POST /api/v1/auth/refresh`, `POST /api/v1/auth/logout`
-- `/api/v1/tenants/me`, `/api/v1/shops`, `/api/v1/users`
-- `POST /api/v1/orders`, `GET /api/v1/orders`, `POST /api/v1/orders/{id}/results` 등 조달 오더
+### 인증 (비인증)
+
+- `GET /api/v1/auth/{provider}/login` — 카카오·네이버 OAuth 진입점 (state CSRF Redis 저장)
+- `GET /api/v1/auth/{provider}/callback` — 프로바이더 콜백, `TokenPair` 반환
+- `POST /api/v1/auth/refresh` — refresh 회전 (기존 jti revoke)
+- `POST /api/v1/auth/logout` — 현재 refresh jti revoke
+
+### 테넌트/매장 (Bearer JWT 필요)
+
+- `GET /api/v1/tenants/me` — 현재 사용자의 테넌트
+- `POST /api/v1/shops`, `GET /api/v1/shops`, `GET /api/v1/shops/{id}` — 매장 관리 (테넌트 격리)
+- `GET /api/v1/users/me` — 내 계정
+
+### 조달 (Bearer JWT 필요)
+
+- `POST /api/v1/procurement/orders`, `GET /api/v1/procurement/orders`, `GET /api/v1/procurement/orders/{id}`
+- `POST /api/v1/procurement/orders/{id}/results` — 결과 업로드 (쿼터 소비)
+- `GET /api/v1/procurement/orders/{id}/results` — per_unit_price ASC
+- `GET /api/v1/procurement/reports/summary?from=&to=` — 기간별 절감액 집계
+
+### 검색 (Bearer JWT 필요)
+
+- `GET /api/v1/search` — 업로드된 `procurement_results` 기반 테넌트 스코프 랭킹. 캐시 네임스페이스 `search:{tenant_id}:...`, 쿼터 소비 포함.
+
+### 헬스 체크
+
 - `GET /health/live`, `GET /health/ready`
-
-> `GET /api/v1/search` 는 Wave 3 재설계 완료 전까지 비활성 상태.
 
 ## 필수 환경변수
 
@@ -50,8 +70,13 @@ make dev-api         # 로컬 uvicorn 만
 make test
 ```
 
-- 정규식 파서, 개당 실가 계산, 랭킹, 배송비 정책, 캐시 키 등 재사용 가능한 모듈 단위 테스트 유지
-- Wave 4 에서 tenancy / auth / procurement 신규 모듈 테스트 및 커버리지 80% 목표 달성 예정
+- 신규 모듈(tenancy / auth / procurement / services) 테스트 포함 총 **135개 통과**
+- 주요 모듈 커버리지 (`pytest --cov`):
+  - `app.tenancy` models 100% / service 98%
+  - `app.auth` service 92% / jwt 92%
+  - `app.procurement` router 94% / service 90%
+  - `app.services.search_service` 92%, `quota_service` 94%
+- 테스트 격리: SQLite in-memory + fakeredis + respx (외부 OAuth stub)
 
 ## 라이선스
 
