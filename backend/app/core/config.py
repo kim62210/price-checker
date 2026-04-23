@@ -17,8 +17,6 @@ class Settings(BaseSettings):
         case_sensitive=False,
     )
 
-    naver_daily_quota: int = Field(default=25_000, ge=1)
-
     database_url: str = Field(default="postgresql+asyncpg://lowestprice:lowestprice@localhost:5432/lowestprice")
     redis_url: str = Field(default="redis://localhost:6379/0")
 
