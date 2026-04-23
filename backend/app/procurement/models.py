@@ -27,6 +27,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
 
+_bigint = BigInteger().with_variant(Integer(), "sqlite")
+
 if TYPE_CHECKING:  # 순환 import 방지용 타입 힌트
     from app.tenancy.models import Shop, Tenant
 
@@ -56,14 +58,14 @@ class ProcurementOrder(Base, TimestampMixin):
         ),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_bigint, primary_key=True, autoincrement=True)
     tenant_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint,
         ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
     )
     shop_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint,
         ForeignKey("shops.id", ondelete="CASCADE"),
         nullable=False,
     )
@@ -109,14 +111,14 @@ class ProcurementResult(Base):
         ),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_bigint, primary_key=True, autoincrement=True)
     order_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint,
         ForeignKey("procurement_orders.id", ondelete="CASCADE"),
         nullable=False,
     )
     tenant_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint,
         ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
     )
