@@ -1,9 +1,9 @@
 ## 1. DB 스키마 추가 (Alembic migration)
 
-- [ ] 1.1 기존 `backend/app/db/migrations/versions/` 전체 리비전 파일 삭제 (친구용 데이터 보존 가치 없음)
-- [ ] 1.2 단일 리비전 `001_pivot_multi_tenant.py` 작성 — `tenants`, `shops`, `users`, `refresh_tokens`, `procurement_orders`, `procurement_results` 생성 + `listings.tenant_id` 컬럼 추가
-- [ ] 1.3 `(tenant_id, created_at DESC)`, `(tenant_id, id)` 복합 인덱스 포함
-- [ ] 1.4 `alembic upgrade head` 로 로컬 Postgres에 적용 확인
+- [x] 1.1 기존 `backend/app/db/migrations/versions/` 전체 리비전 파일 삭제 (친구용 데이터 보존 가치 없음)
+- [x] 1.2 단일 리비전 `001_pivot_multi_tenant.py` 작성 — `tenants`, `shops`, `users`, `refresh_tokens`, `procurement_orders`, `procurement_results` 생성 + `listings.tenant_id` 컬럼 추가
+- [x] 1.3 `(tenant_id, created_at DESC)`, `(tenant_id, id)` 복합 인덱스 포함
+- [x] 1.4 `alembic upgrade head` 로 로컬 Postgres에 적용 확인 (로컬 Postgres 부재 시 `alembic heads`/`history` 로 단일 head 검증)
 
 ## 2. tenancy 모듈 신규
 
@@ -94,8 +94,8 @@
 
 ## 14. models/listing.py 수정
 
-- [ ] 14.1 `tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id"), nullable=False, index=True)` 추가
-- [ ] 14.2 관계 매핑 추가 (`tenant: Mapped[Tenant] = relationship(...)`)
+- [x] 14.1 `tenant_id: Mapped[int] = mapped_column(ForeignKey("tenants.id"), nullable=False, index=True)` 추가
+- [x] 14.2 관계 매핑 추가 (`tenant: Mapped[Tenant] = relationship(...)`)
 
 ## 15. 기존 테스트 중 collectors 관련 제거·마이그레이션
 

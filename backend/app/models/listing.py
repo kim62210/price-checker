@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import (
     JSON,
@@ -23,6 +23,9 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
 
+if TYPE_CHECKING:  # 순환 import 방지용 타입 힌트
+    from app.tenancy.models import Tenant
+
 
 class Listing(Base, TimestampMixin):
     __tablename__ = "listings"
@@ -31,6 +34,12 @@ class Listing(Base, TimestampMixin):
     )
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    tenant_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("tenants.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
     platform: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
     seller_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
     platform_product_id: Mapped[str] = mapped_column(String(128), nullable=False)
@@ -45,6 +54,7 @@ class Listing(Base, TimestampMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
+    tenant: Mapped["Tenant"] = relationship("Tenant", lazy="raise")
     options: Mapped[list["Option"]] = relationship(
         "Option", back_populates="listing", cascade="all, delete-orphan"
     )
