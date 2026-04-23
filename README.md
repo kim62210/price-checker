@@ -38,7 +38,7 @@ make test-ui
 make build-ui
 ```
 
-Tauri 네이티브 WebView 자동화는 후속 구현 범위이며 현재 Rust 명령은 UI 연동을 위한 안전한 placeholder 로 제공된다.
+현재 Tauri Rust 명령은 사장님 PC에서 쿠팡/네이버 검색 페이지를 직접 조회·파싱해 UI 비교 결과를 만들고, API 연결 시 기존 조달 엔드포인트로 발주/결과를 저장한다. 로그인 전용 foreground WebView 자동화와 상세 페이지 옵션 파싱 고도화는 후속 범위다.
 
 ## 주요 엔드포인트
 

@@ -1,5 +1,6 @@
 import { useMemo, useReducer } from 'react';
 import { createOrder, fetchSummaryReport, uploadResult } from '../api/procurement';
+import { searchMarketplaceItems } from '../api/nativeSearch';
 import type { ApiClientOptions } from '../api/client';
 import type { SummaryReport } from '../types/api';
 import type { ComparisonResult, OrderItem, ProcurementProgress } from '../types/procurement';
@@ -171,20 +172,27 @@ export function useProcurement() {
     [state.items, state.isRunning],
   );
 
-  const runLocalPreview = (normalized: OrderItem[]) => {
-    window.setTimeout(() => {
-      dispatch({ type: 'progress', progress: runningProgress(normalized.length, 52) });
-    }, 250);
-    window.setTimeout(() => {
+  const runLocalPreview = async (normalized: OrderItem[]) => {
+    dispatch({ type: 'progress', progress: runningProgress(normalized.length, 42) });
+    try {
+      const searched = await searchMarketplaceItems(normalized);
+      dispatch({ type: 'progress', progress: runningProgress(normalized.length, 88) });
+      dispatch({
+        type: 'complete',
+        results: searched.length ? searched : buildMockComparison(normalized),
+        notice: searched.length
+          ? '쿠팡/네이버 실제 검색이 완료되었습니다. API 미연결 상태라 결과는 로컬에만 표시됩니다.'
+          : '검색 결과가 없어 로컬 미리보기 결과를 표시합니다.',
+      });
+    } catch (error) {
+      console.warn('native marketplace search unavailable', error);
       dispatch({ type: 'progress', progress: runningProgress(normalized.length, 84) });
-    }, 550);
-    window.setTimeout(() => {
       dispatch({
         type: 'complete',
         results: buildMockComparison(normalized),
-        notice: 'API 미연결 로컬 미리보기로 비교가 완료되었습니다. 설정에서 API를 연결하면 발주와 결과가 저장됩니다.',
+        notice: `${errorMessage(error)} 로컬 미리보기 결과를 표시합니다.`,
       });
-    }, 850);
+    }
   };
 
   const runApiFlow = async (normalized: OrderItem[], options: StartOptions) => {
@@ -207,11 +215,22 @@ export function useProcurement() {
       dispatch({ type: 'progress', progress: runningProgress(normalized.length, 25 + ((index + 1) / normalized.length) * 35) });
     }
 
-    const generated = buildMockComparison(normalized, orderIds).map((result) => (
-      failedItemIds.has(result.orderItemId)
-        ? { ...result, status: 'error' as const, syncStatus: 'failed' as const, syncError: '발주 생성 실패' }
-        : result
-    ));
+    let generated: ComparisonResult[];
+    try {
+      generated = await searchMarketplaceItems(normalized);
+      dispatch({ type: 'progress', progress: runningProgress(normalized.length, 64) });
+    } catch (error) {
+      console.warn('native marketplace search unavailable', error);
+      generated = buildMockComparison(normalized, orderIds);
+    }
+
+    generated = generated.map((result) => {
+      const backendOrderId = orderIds[result.orderItemId];
+      if (failedItemIds.has(result.orderItemId)) {
+        return { ...result, backendOrderId, status: 'error' as const, syncStatus: 'failed' as const, syncError: '발주 생성 실패' };
+      }
+      return { ...result, backendOrderId, syncStatus: result.syncStatus ?? 'local' };
+    });
 
     const uploaded: ComparisonResult[] = [];
     for (const [index, result] of generated.entries()) {
@@ -257,7 +276,7 @@ export function useProcurement() {
     if (normalized.length === 0) return;
 
     if (!options.useApi) {
-      runLocalPreview(normalized);
+      await runLocalPreview(normalized);
       return;
     }
 
