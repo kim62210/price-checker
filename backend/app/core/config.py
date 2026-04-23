@@ -31,8 +31,6 @@ class Settings(BaseSettings):
     database_url: str = Field(default="postgresql+asyncpg://lowestprice:lowestprice@localhost:5432/lowestprice")
     redis_url: str = Field(default="redis://localhost:6379/0")
 
-    ollama_base_url: str = Field(default="http://localhost:11434")
-    ollama_model: str = Field(default="qwen2.5:7b")
     openai_api_key: SecretStr | None = None
     openai_model: str = Field(default="gpt-4o-mini")
     llm_monthly_token_cap: int = Field(default=2_000_000, ge=0)

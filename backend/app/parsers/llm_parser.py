@@ -1,4 +1,4 @@
-"""LLM 폴백 파서 (Ollama 우선, OpenAI 폴백)."""
+"""LLM 폴백 파서 (OpenAI)."""
 
 from __future__ import annotations
 
@@ -82,29 +82,6 @@ async def parse_with_llm(text: str, settings: Settings | None = None) -> ParseRe
         logger.warning("llm_monthly_cap_exceeded")
         return None
 
-    # 1. Ollama
-    try:
-        import ollama  # type: ignore[import-untyped]
-
-        client = ollama.AsyncClient(host=settings.ollama_base_url)
-        response = await client.chat(
-            model=settings.ollama_model,
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": text},
-            ],
-            format="json",
-            options={"temperature": 0.0},
-        )
-        content = response["message"]["content"]
-        raw = json.loads(content)
-        parsed = _coerce_result(raw, text, f"ollama/{settings.ollama_model}")
-        if parsed:
-            return parsed
-    except Exception as exc:  # noqa: BLE001
-        logger.debug("ollama_fallback_miss", error=str(exc))
-
-    # 2. OpenAI
     if settings.openai_api_key:
         try:
             from openai import AsyncOpenAI
