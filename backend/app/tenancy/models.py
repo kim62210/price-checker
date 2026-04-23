@@ -21,6 +21,12 @@ from sqlalchemy import (
     UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.types import TypeEngine
+
+
+def _bigint() -> TypeEngine:
+    """SQLite 호환 BigInteger — 테스트(SQLite)에서는 Integer 로 동작."""
+    return BigInteger().with_variant(Integer(), "sqlite")
 
 from app.models.base import Base, TimestampMixin
 
@@ -34,7 +40,7 @@ class Tenant(Base, TimestampMixin):
     __tablename__ = "tenants"
     __table_args__ = (Index("ix_tenants_plan", "plan"),)
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_bigint(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
     plan: Mapped[str] = mapped_column(
         String(32), nullable=False, default="starter", server_default="starter"
@@ -57,9 +63,9 @@ class Shop(Base, TimestampMixin):
     __tablename__ = "shops"
     __table_args__ = (Index("ix_shops_tenant_created", "tenant_id", "created_at"),)
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_bigint(), primary_key=True, autoincrement=True)
     tenant_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint(),
         ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
@@ -80,9 +86,9 @@ class User(Base, TimestampMixin):
         Index("ix_users_email", "email"),
     )
 
-    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(_bigint(), primary_key=True, autoincrement=True)
     tenant_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint(),
         ForeignKey("tenants.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
