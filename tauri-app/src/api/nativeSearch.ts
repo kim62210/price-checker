@@ -59,5 +59,6 @@ export async function searchMarketplaceItems(items: OrderItem[]): Promise<Compar
     savingVsTarget: result.savingVsTarget ?? undefined,
     syncStatus: 'local',
     syncError: result.error ?? undefined,
+    parserSource: result.optionText.split(' · ').at(-1),
   }));
 }

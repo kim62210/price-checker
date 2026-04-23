@@ -51,6 +51,7 @@ export interface ComparisonResult {
   backendResultId?: number;
   syncStatus?: SyncStatus;
   syncError?: string;
+  parserSource?: string;
 }
 
 export interface PlatformProgress {

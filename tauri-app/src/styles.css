@@ -328,3 +328,7 @@ textarea:focus, input:focus, select:focus { border-color: var(--primary); box-sh
     grid-template-columns: 1fr;
   }
 }
+
+.success-copy {
+  color: #15803d !important;
+}

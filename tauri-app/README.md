@@ -29,4 +29,4 @@ pnpm tauri dev
 
 ## 실제 검색 경로
 
-`search_marketplace_items` Tauri command가 품목별 쿠팡/네이버 검색 페이지를 조회하고, 가격·배송비·수량 힌트를 파싱해 React 비교표에 전달합니다. API 설정이 연결되어 있으면 결과를 `/api/v1/procurement/orders/{id}/results`로 업로드합니다.
+`search_marketplace_items` Tauri command가 품목별 쿠팡/네이버 검색 페이지를 조회한 뒤 후보 상세 페이지를 보강하고, 가격·배송비·수량 힌트를 파싱해 React 비교표에 전달합니다. API 설정이 연결되어 있으면 결과를 `/api/v1/procurement/orders/{id}/results`로 업로드합니다.

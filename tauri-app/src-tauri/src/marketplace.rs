@@ -47,6 +47,9 @@ struct MarketplaceCandidate {
     seller: String,
     price: f64,
     shipping_fee: f64,
+    free_threshold: Option<f64>,
+    is_rocket: bool,
+    source: &'static str,
     url: String,
 }
 
@@ -66,13 +69,13 @@ pub async fn search_marketplaces(
     let mut all_results = Vec::new();
     for item in items {
         let coupang = search_coupang(&client, &item).await;
-        push_platform_results(&mut all_results, &item, "coupang", coupang);
+        push_platform_results(&client, &mut all_results, &item, "coupang", coupang).await;
 
         // Human-like lightweight pacing between marketplace domains.
         tokio_sleep(450).await;
 
         let naver = search_naver(&client, &item).await;
-        push_platform_results(&mut all_results, &item, "naver", naver);
+        push_platform_results(&client, &mut all_results, &item, "naver", naver).await;
 
         tokio_sleep(650).await;
     }
@@ -94,7 +97,8 @@ fn null_last(value: Option<f64>) -> f64 {
     value.unwrap_or(f64::MAX)
 }
 
-fn push_platform_results(
+async fn push_platform_results(
+    client: &reqwest::Client,
     all_results: &mut Vec<MarketplaceSearchResult>,
     item: &SearchItemInput,
     platform: &'static str,
@@ -103,7 +107,9 @@ fn push_platform_results(
     match candidates {
         Ok(candidates) if !candidates.is_empty() => {
             for (index, candidate) in candidates.into_iter().enumerate() {
-                all_results.push(to_result(item, candidate, index));
+                let enriched = enrich_candidate(client, candidate).await;
+                all_results.push(to_result(item, enriched, index));
+                tokio_sleep(220).await;
             }
         }
         Ok(_) => all_results.push(error_result(
@@ -147,14 +153,18 @@ fn to_result(
         order_item_id: item.id.clone(),
         product_name: item.name.clone(),
         platform: candidate.platform.to_string(),
-        option_text: candidate.title,
+        option_text: format!("{} · {}", candidate.title, candidate.source),
         seller_name: candidate.seller,
         listed_price: candidate.price,
         shipping_fee: candidate.shipping_fee,
         unit_count: parsed_unit_count,
         unit: item.unit.clone(),
         unit_price,
-        unit_price_confidence: if parsed_unit_count == Some(item.quantity.max(1)) {
+        unit_price_confidence: if candidate.source.contains("detail")
+            && parsed_unit_count != Some(item.quantity.max(1))
+        {
+            "high".to_string()
+        } else if parsed_unit_count == Some(item.quantity.max(1)) {
             "medium".to_string()
         } else {
             "high".to_string()
@@ -254,6 +264,9 @@ async fn search_coupang(
             seller: "쿠팡".to_string(),
             price,
             shipping_fee,
+            free_threshold: Some(19_800.0),
+            is_rocket: full_text.contains("로켓"),
+            source: "search_selector",
             url,
         });
         if candidates.len() >= DEFAULT_LIMIT_PER_PLATFORM {
@@ -358,6 +371,9 @@ fn parse_naver_dom(html: &str) -> Vec<MarketplaceCandidate> {
             seller,
             price,
             shipping_fee: 0.0,
+            free_threshold: None,
+            is_rocket: false,
+            source: "search_selector",
             url,
         });
         if candidates.len() >= DEFAULT_LIMIT_PER_PLATFORM {
@@ -408,6 +424,9 @@ fn parse_naver_embedded_json(html: &str) -> Vec<MarketplaceCandidate> {
             seller,
             price,
             shipping_fee: 0.0,
+            free_threshold: None,
+            is_rocket: false,
+            source: "search_embedded_json",
             url,
         });
         if candidates.len() >= DEFAULT_LIMIT_PER_PLATFORM {
@@ -415,6 +434,304 @@ fn parse_naver_embedded_json(html: &str) -> Vec<MarketplaceCandidate> {
         }
     }
     candidates
+}
+
+async fn enrich_candidate(
+    client: &reqwest::Client,
+    candidate: MarketplaceCandidate,
+) -> MarketplaceCandidate {
+    if !candidate.url.starts_with("http") {
+        return candidate;
+    }
+    let detail = match candidate.platform {
+        "coupang" => fetch_html(client, &candidate.url, Some("https://www.coupang.com/"))
+            .await
+            .ok()
+            .and_then(|html| parse_coupang_detail(&html)),
+        "naver" => fetch_html(client, &candidate.url, Some("https://shopping.naver.com/"))
+            .await
+            .ok()
+            .and_then(|html| parse_naver_detail(&html)),
+        _ => None,
+    };
+
+    let Some(detail) = detail else {
+        return candidate;
+    };
+
+    let price = detail.price.unwrap_or(candidate.price);
+    let shipping_fee = apply_shipping_policy(
+        candidate.platform,
+        price,
+        detail
+            .shipping_fee
+            .or(Some(candidate.shipping_fee))
+            .unwrap_or(0.0),
+        detail.free_threshold.or(candidate.free_threshold),
+        detail.is_rocket || candidate.is_rocket,
+    );
+
+    MarketplaceCandidate {
+        title: detail.option_text.unwrap_or(candidate.title),
+        seller: detail.seller.unwrap_or(candidate.seller),
+        price,
+        shipping_fee,
+        free_threshold: detail.free_threshold.or(candidate.free_threshold),
+        is_rocket: detail.is_rocket || candidate.is_rocket,
+        source: detail.source,
+        ..candidate
+    }
+}
+
+#[derive(Debug, Clone)]
+struct DetailData {
+    option_text: Option<String>,
+    seller: Option<String>,
+    price: Option<f64>,
+    shipping_fee: Option<f64>,
+    free_threshold: Option<f64>,
+    is_rocket: bool,
+    source: &'static str,
+}
+
+fn parse_coupang_detail(html: &str) -> Option<DetailData> {
+    let document = Html::parse_document(html);
+    let body_text = normalize_space(&document.root_element().text().collect::<Vec<_>>().join(" "));
+    let json_ld_price = parse_json_ld_price(html);
+    let meta_price = parse_meta_price(
+        &document,
+        &["product:price:amount", "og:price:amount", "twitter:data1"],
+    );
+    let selector_price = first_price_by_selector(
+        &document,
+        &[".price-value", ".total-price", "[class*='price']"],
+    );
+    let price = json_ld_price.or(meta_price).or(selector_price);
+    let shipping_fee = parse_shipping_fee(&body_text);
+    let is_rocket = body_text.contains("로켓") || body_text.to_lowercase().contains("rocket");
+    let option_text = first_text_by_selector(
+        &document,
+        &[
+            "h1.prod-buy-header__title",
+            "h1[class*='title']",
+            "meta[property='og:title']",
+        ],
+    );
+    let seller = first_text_by_selector(
+        &document,
+        &[
+            ".prod-sale-vendor-name",
+            "[class*='vendor']",
+            "[class*='seller']",
+        ],
+    );
+    let source = if json_ld_price.is_some() {
+        "detail_json_ld"
+    } else if meta_price.is_some() {
+        "detail_meta_tag"
+    } else {
+        "detail_selector"
+    };
+    if price.is_none() && option_text.is_none() && shipping_fee.is_none() {
+        return None;
+    }
+    Some(DetailData {
+        option_text,
+        seller,
+        price,
+        shipping_fee,
+        free_threshold: Some(19_800.0),
+        is_rocket,
+        source,
+    })
+}
+
+fn parse_naver_detail(html: &str) -> Option<DetailData> {
+    let document = Html::parse_document(html);
+    let body_text = normalize_space(&document.root_element().text().collect::<Vec<_>>().join(" "));
+    let preloaded = parse_naver_preloaded_state(html);
+    if preloaded.price.is_some() || preloaded.option_text.is_some() {
+        return Some(preloaded);
+    }
+    let meta_price = parse_meta_price(&document, &["product:price:amount", "og:price:amount"]);
+    let selector_price = first_price_by_selector(&document, &["[class*='price']", "strong", "em"]);
+    let price = meta_price.or(selector_price);
+    let shipping_fee = parse_shipping_fee(&body_text);
+    let free_threshold = parse_free_threshold(&body_text);
+    let option_text = first_text_by_selector(
+        &document,
+        &["meta[property='og:title']", "h1", "[class*='title']"],
+    );
+    if price.is_none()
+        && option_text.is_none()
+        && shipping_fee.is_none()
+        && free_threshold.is_none()
+    {
+        return None;
+    }
+    Some(DetailData {
+        option_text,
+        seller: Some("네이버 스마트스토어".to_string()),
+        price,
+        shipping_fee,
+        free_threshold,
+        is_rocket: false,
+        source: "detail_selector",
+    })
+}
+
+fn parse_naver_preloaded_state(html: &str) -> DetailData {
+    let state_re = Regex::new(r#"(?s)__PRELOADED_STATE__\s*=\s*(?P<json>\{.*?\})\s*</script>"#)
+        .expect("valid regex");
+    let Some(json_text) = state_re
+        .captures(html)
+        .and_then(|cap| cap.name("json"))
+        .map(|m| m.as_str())
+    else {
+        return empty_detail("preloaded_state_missing");
+    };
+    let title_re =
+        Regex::new(r#"(?:productName|name|title)"\s*:\s*"([^"]{2,180})"#).expect("valid regex");
+    let option_re =
+        Regex::new(r#"(?:optionName|name)"\s*:\s*"([^"]{2,180})"#).expect("valid regex");
+    let price_re = Regex::new(r#"(?:salePrice|discountedSalePrice|price)"\s*:\s*"?([0-9,]{3,})"?"#)
+        .expect("valid regex");
+    let shipping_re = Regex::new(r#"(?:baseFee|deliveryFee|shippingFee)"\s*:\s*"?([0-9,]{1,})"?"#)
+        .expect("valid regex");
+    let free_re = Regex::new(
+        r#"(?:freeShippingPrice|freeDeliveryPrice|freeThreshold)"\s*:\s*"?([0-9,]{3,})"?"#,
+    )
+    .expect("valid regex");
+    let title = option_re
+        .captures(json_text)
+        .and_then(|cap| cap.get(1))
+        .or_else(|| title_re.captures(json_text).and_then(|cap| cap.get(1)))
+        .map(|m| decode_jsonish(m.as_str()));
+    DetailData {
+        option_text: title,
+        seller: Some("네이버 스마트스토어".to_string()),
+        price: price_re
+            .captures(json_text)
+            .and_then(|cap| cap.get(1))
+            .and_then(|m| parse_price(m.as_str())),
+        shipping_fee: shipping_re
+            .captures(json_text)
+            .and_then(|cap| cap.get(1))
+            .and_then(|m| parse_price(m.as_str())),
+        free_threshold: free_re
+            .captures(json_text)
+            .and_then(|cap| cap.get(1))
+            .and_then(|m| parse_price(m.as_str())),
+        is_rocket: false,
+        source: "detail_preloaded_state",
+    }
+}
+
+fn empty_detail(source: &'static str) -> DetailData {
+    DetailData {
+        option_text: None,
+        seller: None,
+        price: None,
+        shipping_fee: None,
+        free_threshold: None,
+        is_rocket: false,
+        source,
+    }
+}
+
+fn parse_json_ld_price(html: &str) -> Option<f64> {
+    let script_re =
+        Regex::new(r#"(?s)<script[^>]*application/ld\+json[^>]*>(?P<json>.*?)</script>"#)
+            .expect("valid regex");
+    let price_re =
+        Regex::new(r#"(?:price|lowPrice)"\s*:\s*"?([0-9,]{3,})"?"#).expect("valid regex");
+    let parsed = script_re
+        .captures_iter(html)
+        .filter_map(|cap| cap.name("json"))
+        .find_map(|json| {
+            price_re
+                .captures(json.as_str())
+                .and_then(|cap| cap.get(1))
+                .and_then(|m| parse_price(m.as_str()))
+        });
+    parsed
+}
+
+fn parse_meta_price(document: &Html, properties: &[&str]) -> Option<f64> {
+    for property in properties {
+        let query = format!("meta[property='{property}'], meta[name='{property}']");
+        let selector = Selector::parse(&query).ok()?;
+        if let Some(price) = document
+            .select(&selector)
+            .filter_map(|node| node.value().attr("content"))
+            .find_map(parse_price)
+        {
+            return Some(price);
+        }
+    }
+    None
+}
+
+fn first_price_by_selector(document: &Html, selectors: &[&str]) -> Option<f64> {
+    selectors.iter().find_map(|query| {
+        let selector = Selector::parse(query).ok()?;
+        document
+            .select(&selector)
+            .map(text_of)
+            .find_map(|text| parse_price(&text))
+    })
+}
+
+fn first_text_by_selector(document: &Html, selectors: &[&str]) -> Option<String> {
+    selectors.iter().find_map(|query| {
+        let selector = Selector::parse(query).ok()?;
+        document.select(&selector).find_map(|node| {
+            let content = node
+                .value()
+                .attr("content")
+                .map(str::to_string)
+                .unwrap_or_else(|| text_of(node));
+            let text = normalize_space(&content);
+            (text.len() >= 2).then_some(text)
+        })
+    })
+}
+
+fn parse_shipping_fee(text: &str) -> Option<f64> {
+    if text.contains("무료배송") || text.contains("배송비 무료") {
+        return Some(0.0);
+    }
+    let shipping_re = Regex::new(r"배송(?:비|료)?\s*([0-9,]{3,})\s*원").expect("valid regex");
+    shipping_re
+        .captures(text)
+        .and_then(|cap| cap.get(1))
+        .and_then(|m| parse_price(m.as_str()))
+}
+
+fn parse_free_threshold(text: &str) -> Option<f64> {
+    let free_re = Regex::new(r"([0-9,]{4,})\s*원\s*이상\s*무료").expect("valid regex");
+    free_re
+        .captures(text)
+        .and_then(|cap| cap.get(1))
+        .and_then(|m| parse_price(m.as_str()))
+}
+
+fn apply_shipping_policy(
+    platform: &str,
+    subtotal: f64,
+    explicit_fee: f64,
+    free_threshold: Option<f64>,
+    is_rocket: bool,
+) -> f64 {
+    if platform == "coupang" && is_rocket && subtotal >= 19_800.0 {
+        return 0.0;
+    }
+    if let Some(threshold) = free_threshold {
+        if subtotal >= threshold {
+            return 0.0;
+        }
+    }
+    explicit_fee
 }
 
 fn selector(query: &str) -> Selector {
@@ -510,5 +827,31 @@ mod tests {
     fn parses_price_digits() {
         assert_eq!(parse_price("12,900원"), Some(12900.0));
         assert_eq!(parse_price("무료"), None);
+    }
+
+    #[test]
+    fn parses_coupang_detail_json_ld_and_shipping() {
+        let html = r#"
+            <html><head>
+            <script type="application/ld+json">{"offers":{"price":"12900","priceCurrency":"KRW"}}</script>
+            <meta property="og:title" content="콜라 500ml 24개" />
+            </head><body>배송비 3,000원</body></html>
+        "#;
+        let detail = parse_coupang_detail(html).expect("detail parsed");
+        assert_eq!(detail.price, Some(12900.0));
+        assert_eq!(detail.shipping_fee, Some(3000.0));
+        assert_eq!(detail.source, "detail_json_ld");
+    }
+
+    #[test]
+    fn applies_free_shipping_threshold() {
+        assert_eq!(
+            apply_shipping_policy("naver", 35000.0, 3000.0, Some(30000.0), false),
+            0.0
+        );
+        assert_eq!(
+            apply_shipping_policy("coupang", 25000.0, 3000.0, Some(19800.0), true),
+            0.0
+        );
     }
 }

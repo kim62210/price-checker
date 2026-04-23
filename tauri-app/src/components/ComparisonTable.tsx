@@ -73,6 +73,7 @@ export function ComparisonTable({ items, results, onRetry }: ComparisonTableProp
                     <span>
                       <strong>{formatUnitPrice(result.unitPrice, result.unit)}</strong>
                       {result.unitPriceConfidence === 'low' ? <small className="warning-copy">추정 · 참고용</small> : null}
+                      {result.parserSource?.startsWith('detail') ? <small className="success-copy">상세 페이지 보강</small> : null}
                     </span>
                     <span><StatusBadge status={result.status} /></span>
                     <span className="row-actions">
