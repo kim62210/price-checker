@@ -39,7 +39,7 @@
 - [x] 5.1 기존 크롤링 오케스트레이션 코드(`_collect_naver`, `_collect_coupang`, `_enrich_details`) 전부 제거
 - [x] 5.2 입력을 `tenant_id` + 업로드된 `procurement_results` 로 바꾸고 파서·배송비·랭킹만 수행
 - [x] 5.3 응답 캐시 키에 `tenant_id` 네임스페이스 포함 (`search:{tenant_id}:{md5(query|limit)}`)
-- [ ] 5.4 테스트 재작성 (`tests/test_services/test_search_service.py`) — Wave 4 에서 처리
+- [x] 5.4 테스트 재작성 (`tests/test_services/test_search_service.py`) — Wave 4 에서 처리
 
 ## 6. collectors/ 디렉토리 전체 삭제
 
@@ -106,14 +106,14 @@
 
 ## 16. 신규 모듈 테스트 작성
 
-- [ ] 16.1 `backend/tests/test_tenancy/test_models.py` — Tenant/Shop/User CRUD
-- [ ] 16.2 `backend/tests/test_tenancy/test_dependencies.py` — `get_current_tenant` 누락·만료·위조 토큰
-- [ ] 16.3 `backend/tests/test_tenancy/test_isolation.py` — 테넌트 A 토큰으로 테넌트 B 데이터 조회 시 404 보장 (크로스 테넌트 격리 의무화)
-- [ ] 16.4 `backend/tests/test_auth/test_jwt.py` — access/refresh 발급·만료·서명 검증
-- [ ] 16.5 `backend/tests/test_auth/test_kakao.py` — `respx` 로 카카오 API 스텁, 토큰 교환·userinfo 플로우
-- [ ] 16.6 `backend/tests/test_auth/test_naver.py` — 네이버 OAuth 동등
-- [ ] 16.7 `backend/tests/test_auth/test_refresh_rotation.py` — refresh 갱신·revoke
-- [ ] 16.8 `backend/tests/test_procurement/test_orders.py` — 발주 생성·조회·테넌트 격리
-- [ ] 16.9 `backend/tests/test_procurement/test_results.py` — 결과 업로드·집계
-- [ ] 16.10 `backend/tests/test_procurement/test_quota.py` — 테넌트 월간 쿼터 초과 시 429
-- [ ] 16.11 `pytest --cov` 으로 새 모듈 커버리지 80% 이상 확인
+- [x] 16.1 `backend/tests/test_tenancy/test_models.py` — Tenant/Shop/User CRUD
+- [x] 16.2 `backend/tests/test_tenancy/test_dependencies.py` — `get_current_tenant` 누락·만료·위조 토큰
+- [x] 16.3 `backend/tests/test_tenancy/test_isolation.py` — 테넌트 A 토큰으로 테넌트 B 데이터 조회 시 404 보장 (크로스 테넌트 격리 의무화)
+- [x] 16.4 `backend/tests/test_auth/test_jwt.py` — access/refresh 발급·만료·서명 검증
+- [x] 16.5 `backend/tests/test_auth/test_kakao.py` — `respx` 로 카카오 API 스텁, 토큰 교환·userinfo 플로우
+- [x] 16.6 `backend/tests/test_auth/test_naver.py` — 네이버 OAuth 동등
+- [x] 16.7 `backend/tests/test_auth/test_refresh_rotation.py` — refresh 갱신·revoke
+- [x] 16.8 `backend/tests/test_procurement/test_orders.py` — 발주 생성·조회·테넌트 격리
+- [x] 16.9 `backend/tests/test_procurement/test_results.py` — 결과 업로드·집계
+- [x] 16.10 `backend/tests/test_procurement/test_quota.py` — 테넌트 월간 쿼터 초과 시 429
+- [x] 16.11 `pytest --cov` 으로 새 모듈 커버리지 80% 이상 확인 (전체 89.72% 달성)
