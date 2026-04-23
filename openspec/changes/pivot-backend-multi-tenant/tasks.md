@@ -43,30 +43,30 @@
 
 ## 6. collectors/ 디렉토리 전체 삭제
 
-- [ ] 6.1 `backend/app/collectors/` 하위 전체 파일 삭제 (`base.py`, `naver.py`, `naver_detail.py`, `coupang.py`, `coupang_detail.py`, `http_client.py`, `rate_limiter.py`, `circuit_breaker.py`, `selectors.yaml`, `selectors_loader.py`, `remote_scraper.py`, `__init__.py`)
-- [ ] 6.2 `backend/pyproject.toml` 에서 `playwright`, `selectolax`, `curl_cffi`, `vcrpy`, `respx` 중 크롤러 전용 의존성 제거
-- [ ] 6.3 import 끊긴 곳(`services/search_service.py` 등) 잔재 참조 전부 제거
+- [x] 6.1 `backend/app/collectors/` 하위 전체 파일 삭제 (`base.py`, `naver.py`, `naver_detail.py`, `coupang.py`, `coupang_detail.py`, `http_client.py`, `rate_limiter.py`, `circuit_breaker.py`, `selectors.yaml`, `selectors_loader.py`, `remote_scraper.py`, `__init__.py`)
+- [x] 6.2 `backend/pyproject.toml` 에서 `playwright`, `selectolax`, `curl_cffi`, `vcrpy`, `respx` 중 크롤러 전용 의존성 제거
+- [x] 6.3 import 끊긴 곳(`services/search_service.py` 등) 잔재 참조 전부 제거
 
 ## 7. /scraper/ 디렉토리 삭제
 
-- [ ] 7.1 `scraper/` 디렉토리 전체 삭제 (Mac mini 용 코드의 레포 내 버전)
-- [ ] 7.2 `infra/docker-compose.yml` 에서 `scraper` 서비스·볼륨 제거
-- [ ] 7.3 `.env.example` 에서 `SCRAPER_REMOTE_URL`, `REMOTE_SCRAPER_TOKEN` 같은 설정 제거
+- [x] 7.1 `scraper/` 디렉토리 전체 삭제 (Mac mini 용 코드의 레포 내 버전)
+- [x] 7.2 `infra/docker-compose.yml` 에서 `scraper` 서비스·볼륨 제거
+- [x] 7.3 `.env.example` 에서 `SCRAPER_REMOTE_URL`, `REMOTE_SCRAPER_TOKEN` 같은 설정 제거
 
 ## 8. ui/streamlit_app.py 삭제
 
-- [ ] 8.1 `backend/app/ui/` 디렉토리 전체 삭제
-- [ ] 8.2 `backend/pyproject.toml` 에서 `streamlit` 의존성 제거
-- [ ] 8.3 `infra/docker-compose.yml` 에서 `streamlit` 서비스 제거
-- [ ] 8.4 `Makefile` 에서 Streamlit 관련 타겟 제거
+- [x] 8.1 `backend/app/ui/` 디렉토리 전체 삭제
+- [x] 8.2 `backend/pyproject.toml` 에서 `streamlit` 의존성 제거
+- [x] 8.3 `infra/docker-compose.yml` 에서 `streamlit` 서비스 제거
+- [x] 8.4 `Makefile` 에서 Streamlit 관련 타겟 제거
 
 ## 9. core/config.py 업데이트
 
 - [x] 9.1 신규 설정 추가 — `JWT_SECRET`, `JWT_ALGORITHM` (기본 `HS256`), `JWT_ACCESS_TTL_MINUTES` (기본 30), `JWT_REFRESH_TTL_DAYS` (기본 14)
 - [x] 9.2 OAuth 설정 추가 — `KAKAO_CLIENT_ID`, `KAKAO_CLIENT_SECRET`, `KAKAO_REDIRECT_URI`, `NAVER_OAUTH_CLIENT_ID`, `NAVER_OAUTH_CLIENT_SECRET`, `NAVER_OAUTH_REDIRECT_URI`
 - [x] 9.3 테넌트 설정 추가 — `DEFAULT_TENANT_API_QUOTA_MONTHLY` (기본 10000)
-- [ ] 9.4 구 설정 제거 — `NAVER_CLIENT_ID`/`NAVER_CLIENT_SECRET` (쇼핑 API 용), `PLAYWRIGHT_CONCURRENCY`, `NAVER_RPM`, `COUPANG_RPM`, `DETAIL_CACHE_TTL_SECONDS`, `SCRAPER_REMOTE_URL`
-- [ ] 9.5 `.env.example` 동기화
+- [x] 9.4 구 설정 제거 — `NAVER_CLIENT_ID`/`NAVER_CLIENT_SECRET` (쇼핑 API 용), `PLAYWRIGHT_CONCURRENCY`, `NAVER_RPM`, `COUPANG_RPM`, `DETAIL_CACHE_TTL_SECONDS`, `SCRAPER_REMOTE_URL`
+- [x] 9.5 `.env.example` 동기화
 
 ## 10. api/v1/router.py 인증 미들웨어 적용
 
@@ -99,10 +99,10 @@
 
 ## 15. 기존 테스트 중 collectors 관련 제거·마이그레이션
 
-- [ ] 15.1 `backend/tests/test_collectors/` 디렉토리 전체 삭제
-- [ ] 15.2 `backend/tests/test_services/test_search_service.py` 에서 크롤링 관련 fixture·목 제거
-- [ ] 15.3 Streamlit UI 관련 테스트 삭제
-- [ ] 15.4 `detail_cache_service` 관련 테스트 삭제
+- [x] 15.1 `backend/tests/test_collectors/` 디렉토리 전체 삭제
+- [x] 15.2 `backend/tests/test_services/test_search_service.py` 에서 크롤링 관련 fixture·목 제거
+- [x] 15.3 Streamlit UI 관련 테스트 삭제
+- [x] 15.4 `detail_cache_service` 관련 테스트 삭제
 
 ## 16. 신규 모듈 테스트 작성
 

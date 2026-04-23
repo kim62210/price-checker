@@ -47,29 +47,3 @@ services:
     ports:
       - "8000:8000"
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
-
-  streamlit:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    container_name: lowest-price-streamlit
-    depends_on:
-      - backend
-    env_file:
-      - ../.env
-    environment:
-      LOWEST_PRICE_API_BASE: http://backend:8000
-    ports:
-      - "8501:8501"
-    command:
-      [
-        "streamlit",
-        "run",
-        "app/ui/streamlit_app.py",
-        "--server.address",
-        "0.0.0.0",
-        "--server.port",
-        "8501",
-        "--browser.gatherUsageStats",
-        "false",
-      ]

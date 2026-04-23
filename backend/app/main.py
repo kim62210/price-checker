@@ -12,13 +12,14 @@ from prometheus_fastapi_instrumentator import Instrumentator
 
 from app import __version__
 from app.api.v1.router import api_router
-from app.collectors.http_client import close_http_client
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
 from app.core.middleware import register_middleware
 from app.db.session import get_engine
 from app.models import Base
+
+# TODO(wave3): search_service 재설계 시 http_client 훅을 다시 연결
 
 logger = get_logger(__name__)
 
@@ -43,7 +44,6 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         yield
     finally:
         logger.info("shutdown_cleanup")
-        await close_http_client()
         await engine.dispose()
 
 

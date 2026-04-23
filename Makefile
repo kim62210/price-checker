@@ -1,14 +1,13 @@
-.PHONY: help install dev dev-api dev-ui test lint format typecheck migrate revision up down logs clean
+.PHONY: help install dev dev-api test lint format typecheck migrate revision up down logs clean
 
 BACKEND_DIR := backend
 COMPOSE_FILE := infra/docker-compose.yml
 
 help:
 	@echo "사용 가능한 타겟:"
-	@echo "  install            - 백엔드 의존성 설치 (pip + dev + ui)"
+	@echo "  install            - 백엔드 의존성 설치 (pip + dev)"
 	@echo "  dev                - Docker Compose 로 전체 스택 기동"
 	@echo "  dev-api            - 로컬 uvicorn 기동"
-	@echo "  dev-ui             - Streamlit UI 기동"
 	@echo "  test               - pytest + 커버리지"
 	@echo "  lint               - ruff check"
 	@echo "  format             - ruff format"
@@ -21,16 +20,13 @@ help:
 	@echo "  clean              - pyc/cache 삭제"
 
 install:
-	cd $(BACKEND_DIR) && pip install -e '.[dev,ui]'
+	cd $(BACKEND_DIR) && pip install -e '.[dev]'
 
 dev: up
-	@echo "스택 기동 완료. API: http://localhost:8000, UI: http://localhost:8501"
+	@echo "스택 기동 완료. API: http://localhost:8000"
 
 dev-api:
 	cd $(BACKEND_DIR) && uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-
-dev-ui:
-	cd $(BACKEND_DIR) && streamlit run app/ui/streamlit_app.py
 
 test:
 	cd $(BACKEND_DIR) && pytest --cov=app --cov-report=term-missing --cov-report=html

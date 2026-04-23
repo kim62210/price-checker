@@ -7,8 +7,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
-from app.collectors.base import ShippingConfidence
+# TODO(wave3): search_service 재설계 후 타입 공유 위치를 도메인 모듈로 이관
+ShippingConfidence = Literal["explicit", "estimated", "unknown"]
 
 COUPANG_ROCKET_FREE_THRESHOLD = 19_800
 COUPANG_ROCKET_DEFAULT_FEE = 3_000
