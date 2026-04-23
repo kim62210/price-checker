@@ -7,12 +7,12 @@
 
 ## 2. tenancy 모듈 신규
 
-- [ ] 2.1 `backend/app/tenancy/__init__.py`
-- [ ] 2.2 `backend/app/tenancy/models.py` — `Tenant`, `Shop`, `User` SQLAlchemy 모델
-- [ ] 2.3 `backend/app/tenancy/schemas.py` — Pydantic v2 DTO (`TenantRead`, `TenantCreate`, `ShopRead`, `ShopCreate`, `UserRead`)
-- [ ] 2.4 `backend/app/tenancy/service.py` — `TenantService`, `ShopService`, `UserService` CRUD (모든 쿼리에 `tenant_id` 필터)
-- [ ] 2.5 `backend/app/tenancy/dependencies.py` — `get_current_user`, `get_current_tenant` FastAPI 의존성
-- [ ] 2.6 `backend/app/tenancy/router.py` — `/api/v1/tenants/me`, `/api/v1/shops`, `/api/v1/users` (인증 필요)
+- [x] 2.1 `backend/app/tenancy/__init__.py`
+- [x] 2.2 `backend/app/tenancy/models.py` — `Tenant`, `Shop`, `User` SQLAlchemy 모델
+- [x] 2.3 `backend/app/tenancy/schemas.py` — Pydantic v2 DTO (`TenantRead`, `TenantCreate`, `ShopRead`, `ShopCreate`, `UserRead`)
+- [x] 2.4 `backend/app/tenancy/service.py` — `TenantService`, `ShopService`, `UserService` CRUD (모든 쿼리에 `tenant_id` 필터)
+- [x] 2.5 `backend/app/tenancy/dependencies.py` — `get_current_user`, `get_current_tenant` FastAPI 의존성
+- [x] 2.6 `backend/app/tenancy/router.py` — `/api/v1/tenants/me`, `/api/v1/shops`, `/api/v1/users` (인증 필요)
 
 ## 3. auth 모듈 신규
 
