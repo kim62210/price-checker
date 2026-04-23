@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth import kakao, naver
 from app.auth.schemas import LogoutRequest, RefreshRequest, TokenPair
 from app.auth.service import AuthService
-from app.core.config import Settings, get_settings
 from app.db.redis import get_redis
 from app.db.session import get_db
 
@@ -24,19 +23,17 @@ Provider = Literal["kakao", "naver"]
 async def get_auth_service(
     session: Annotated[AsyncSession, Depends(get_db)],
     redis: Annotated[Redis, Depends(get_redis)],
-    settings: Annotated[Settings, Depends(get_settings)],
-) -> AuthService:
-    return AuthService(session=session, redis=redis, settings=settings)
+):
+    return AuthService(session=session, redis=redis)
 
 
 @router.get("/kakao/login", status_code=status.HTTP_302_FOUND)
 async def login_with_kakao(
     service: Annotated[AuthService, Depends(get_auth_service)],
-    settings: Annotated[Settings, Depends(get_settings)],
 ) -> RedirectResponse:
     """카카오 authorize URL 로 302 redirect."""
     state = await service.create_state("kakao")
-    url = kakao.build_authorize_url(state, settings=settings)
+    url = kakao.build_authorize_url(state)
     return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
 
 
@@ -57,11 +54,10 @@ async def callback_from_kakao(
 @router.get("/naver/login", status_code=status.HTTP_302_FOUND)
 async def login_with_naver(
     service: Annotated[AuthService, Depends(get_auth_service)],
-    settings: Annotated[Settings, Depends(get_settings)],
 ) -> RedirectResponse:
     """네이버 authorize URL 로 302 redirect."""
     state = await service.create_state("naver")
-    url = naver.build_authorize_url(state, settings=settings)
+    url = naver.build_authorize_url(state)
     return RedirectResponse(url=url, status_code=status.HTTP_302_FOUND)
 
 

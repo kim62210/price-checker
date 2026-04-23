@@ -5,7 +5,6 @@ from __future__ import annotations
 import secrets
 from datetime import UTC, datetime
 from typing import Literal, Protocol
-from uuid import UUID
 
 from redis.asyncio import Redis
 from sqlalchemy import select, update
@@ -77,7 +76,7 @@ class AuthService:
         self,
         session: AsyncSession,
         redis: Redis,
-        settings: Settings | None = None,
+        settings=None,
     ) -> None:
         self._session = session
         self._redis = redis
@@ -130,15 +129,19 @@ class AuthService:
                 raise RefreshTokenExpiredError() from e
             raise RefreshTokenInvalidError() from e
 
-        old_jti = UUID(payload["jti"])
+        old_jti_str = payload["jti"]
         user_id = int(payload["sub"])
 
-        stored = await self._session.get(RefreshToken, old_jti)
+        stored = await self._session.get(RefreshToken, old_jti_str)
         if stored is None:
             raise RefreshTokenInvalidError()
         if stored.revoked_at is not None:
             raise RefreshTokenRevokedError()
-        if stored.expires_at <= datetime.now(UTC):
+        # SQLite 는 timezone-naive 로 저장하므로 tzinfo 가 없으면 UTC 로 간주
+        expires_at = stored.expires_at
+        if expires_at.tzinfo is None:
+            expires_at = expires_at.replace(tzinfo=UTC)
+        if expires_at <= datetime.now(UTC):
             raise RefreshTokenExpiredError()
 
         user = await self._session.get(User, user_id)
@@ -148,7 +151,7 @@ class AuthService:
         # rotation: 기존 revoke + 신규 발급
         await self._session.execute(
             update(RefreshToken)
-            .where(RefreshToken.jti == old_jti)
+            .where(RefreshToken.jti == old_jti_str)
             .values(revoked_at=datetime.now(UTC))
         )
         return await self._issue_token_pair(user)
@@ -163,10 +166,10 @@ class AuthService:
             # 이미 만료/위조된 토큰이라도 로그아웃은 멱등으로 처리
             return
 
-        jti = UUID(payload["jti"])
+        jti_str = payload["jti"]
         await self._session.execute(
             update(RefreshToken)
-            .where(RefreshToken.jti == jti, RefreshToken.revoked_at.is_(None))
+            .where(RefreshToken.jti == jti_str, RefreshToken.revoked_at.is_(None))
             .values(revoked_at=datetime.now(UTC))
         )
 
@@ -237,7 +240,7 @@ class AuthService:
         )
         self._session.add(
             RefreshToken(
-                jti=refresh_jti,
+                jti=str(refresh_jti),
                 user_id=user.id,
                 expires_at=refresh_exp,
             )

@@ -5,11 +5,12 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, func
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy import BigInteger, DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.models.base import Base
+
+_bigint = BigInteger().with_variant(Integer(), "sqlite")
 
 
 class RefreshToken(Base):
@@ -20,9 +21,9 @@ class RefreshToken(Base):
         Index("ix_refresh_tokens_user_expires", "user_id", "expires_at"),
     )
 
-    jti: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
+    jti: Mapped[UUID] = mapped_column(String(36), primary_key=True)
     user_id: Mapped[int] = mapped_column(
-        BigInteger,
+        _bigint,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
     )
