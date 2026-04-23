@@ -25,6 +25,21 @@ make dev-api         # 로컬 uvicorn 만
 - API 기본 주소: `http://localhost:8000`
 - 헬스 체크: `curl http://localhost:8000/health/live`
 
+
+## 데스크톱 UI (Tauri / React)
+
+이번 UI/UX 구현으로 `tauri-app/` 이 추가됐다. 사장님용 발주 입력, 쿠팡/네이버 세션 안내, 개당 실가 비교표, 절감 리포트 화면을 제공하는 React + TypeScript + Vite 기반 데스크톱 UI 스켈레톤이다.
+
+```bash
+make install-ui
+make dev-ui          # http://localhost:5173
+make typecheck-ui
+make test-ui
+make build-ui
+```
+
+Tauri 네이티브 WebView 자동화는 후속 구현 범위이며 현재 Rust 명령은 UI 연동을 위한 안전한 placeholder 로 제공된다.
+
 ## 주요 엔드포인트
 
 ### 인증 (비인증)

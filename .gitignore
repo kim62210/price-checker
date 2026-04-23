@@ -72,3 +72,15 @@ node_modules/
 # Logs
 *.log
 logs/
+
+# Tauri UI
+tauri-app/node_modules/
+tauri-app/dist/
+tauri-app/src-tauri/target/
+tauri-app/*.env.local
+
+# TypeScript build metadata
+*.tsbuildinfo
+tauri-app/vite.config.js
+tauri-app/vite.config.d.ts
+tauri-app/src-tauri/gen/
