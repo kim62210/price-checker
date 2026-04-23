@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from contextlib import suppress
+
 import pytest
 
 
@@ -45,10 +47,8 @@ async def test_remaining_quota_zero_when_exceeded(fake_redis, test_tenant_a):
     from app.services.quota_service import check_and_consume, remaining_quota
 
     for _ in range(5):
-        try:
+        with suppress(QuotaExceededError):
             await check_and_consume(test_tenant_a.id, 3, redis=fake_redis)
-        except QuotaExceededError:
-            pass
 
     remaining = await remaining_quota(test_tenant_a.id, 3, redis=fake_redis)
     assert remaining == 0

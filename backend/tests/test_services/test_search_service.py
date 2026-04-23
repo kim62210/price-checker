@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-
 
 # ----- 시드 헬퍼 -----
 
@@ -43,7 +42,7 @@ async def _seed_order_and_result(
         per_unit_price=Decimal(per_unit_price),
         shipping_fee=Decimal("0"),
         unit_count=1,
-        collected_at=datetime.now(timezone.utc),
+        collected_at=datetime.now(UTC),
     )
     db_session.add(result)
     await db_session.flush()

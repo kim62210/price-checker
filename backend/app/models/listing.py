@@ -54,8 +54,8 @@ class Listing(Base, TimestampMixin):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    tenant: Mapped["Tenant"] = relationship("Tenant", lazy="raise")
-    options: Mapped[list["Option"]] = relationship(
+    tenant: Mapped[Tenant] = relationship("Tenant", lazy="raise")
+    options: Mapped[list[Option]] = relationship(
         "Option", back_populates="listing", cascade="all, delete-orphan"
     )
 
@@ -79,8 +79,8 @@ class Option(Base, TimestampMixin):
     stock: Mapped[int | None] = mapped_column(Integer, nullable=True)
     usable: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
-    listing: Mapped["Listing"] = relationship("Listing", back_populates="options")
-    quotes: Mapped[list["PriceQuote"]] = relationship(
+    listing: Mapped[Listing] = relationship("Listing", back_populates="options")
+    quotes: Mapped[list[PriceQuote]] = relationship(
         "PriceQuote", back_populates="option", cascade="all, delete-orphan"
     )
 
@@ -113,4 +113,4 @@ class PriceQuote(Base):
     source_url: Mapped[str] = mapped_column(Text, nullable=False)
     fetch_method: Mapped[str] = mapped_column(String(16), nullable=False, default="api")
 
-    option: Mapped["Option"] = relationship("Option", back_populates="quotes")
+    option: Mapped[Option] = relationship("Option", back_populates="quotes")

@@ -23,7 +23,7 @@ Provider = Literal["kakao", "naver"]
 async def get_auth_service(
     session: Annotated[AsyncSession, Depends(get_db)],
     redis: Annotated[Redis, Depends(get_redis)],
-):
+) -> AuthService:
     return AuthService(session=session, redis=redis)
 
 

@@ -6,7 +6,6 @@ import pytest
 import respx
 from httpx import Response
 
-
 KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
 KAKAO_USERINFO_URL = "https://kapi.kakao.com/v2/user/me"
 NAVER_TOKEN_URL = "https://nid.naver.com/oauth2.0/token"
@@ -41,8 +40,8 @@ async def test_create_and_consume_state(db_session, fake_redis, settings):
 @pytest.mark.asyncio
 async def test_login_with_kakao(db_session, fake_redis, settings):
     """카카오 로그인 플로우 — tenant+user 신규 생성 → TokenPair 반환."""
-    from app.auth.service import AuthService
     from app.auth.schemas import TokenPair
+    from app.auth.service import AuthService
 
     svc = AuthService(session=db_session, redis=fake_redis, settings=settings)
 
@@ -104,8 +103,8 @@ async def test_login_with_kakao_existing_user(db_session, fake_redis, settings, 
 @pytest.mark.asyncio
 async def test_login_with_naver(db_session, fake_redis, settings):
     """네이버 로그인 플로우 — TokenPair 반환."""
-    from app.auth.service import AuthService
     from app.auth.schemas import TokenPair
+    from app.auth.service import AuthService
 
     svc = AuthService(session=db_session, redis=fake_redis, settings=settings)
 

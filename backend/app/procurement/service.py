@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, time, timedelta, timezone
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
@@ -142,9 +142,9 @@ class ProcurementService:
 
         collected_at = payload.collected_at
         if collected_at is None:
-            collected_at = datetime.now(tz=timezone.utc)
+            collected_at = datetime.now(tz=UTC)
         elif collected_at.tzinfo is None:
-            collected_at = collected_at.replace(tzinfo=timezone.utc)
+            collected_at = collected_at.replace(tzinfo=UTC)
 
         record = ProcurementResult(
             order_id=order.id,
@@ -280,10 +280,10 @@ class ProcurementService:
         to_utc: datetime | None = None
         if date_from is not None:
             from_utc = datetime.combine(date_from, time.min, tzinfo=KST).astimezone(
-                timezone.utc
+                UTC
             )
         if date_to is not None:
             # 종료일 포함이 되도록 +1일 00:00 KST 로 확장
             start_of_next = datetime.combine(date_to, time.min, tzinfo=KST) + _ONE_DAY
-            to_utc = start_of_next.astimezone(timezone.utc)
+            to_utc = start_of_next.astimezone(UTC)
         return from_utc, to_utc

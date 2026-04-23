@@ -47,6 +47,7 @@ async def test_forged_token(client: AsyncClient):
 async def test_expired_access_token(client: AsyncClient, test_user_a, settings):
     """만료된 access token → 401 token_expired."""
     from datetime import UTC, datetime, timedelta
+
     from app.auth.jwt import encode_access_token
 
     past = datetime.now(UTC) - timedelta(hours=1)

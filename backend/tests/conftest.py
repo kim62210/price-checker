@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import fakeredis.aioredis
 import pytest
@@ -44,12 +42,12 @@ def anyio_backend():
 @pytest.fixture
 async def db_engine():
     """SQLite in-memory 비동기 엔진 — 각 테스트마다 새 스키마."""
-    from app.models.base import Base  # noqa: PLC0415
+    import app.auth.models  # noqa: F401, PLC0415
+    import app.procurement.models  # noqa: F401, PLC0415
 
     # 필요한 모델을 임포트해서 Base.metadata 에 등록
     import app.tenancy.models  # noqa: F401, PLC0415
-    import app.auth.models  # noqa: F401, PLC0415
-    import app.procurement.models  # noqa: F401, PLC0415
+    from app.models.base import Base  # noqa: PLC0415
 
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:

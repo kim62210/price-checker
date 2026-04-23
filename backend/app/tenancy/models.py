@@ -9,7 +9,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import Any
 
 from sqlalchemy import (
     BigInteger,
@@ -23,15 +23,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TypeEngine
 
-
-def _bigint() -> TypeEngine:
-    """SQLite 호환 BigInteger — 테스트(SQLite)에서는 Integer 로 동작."""
-    return BigInteger().with_variant(Integer(), "sqlite")
-
 from app.models.base import Base, TimestampMixin
 
-if TYPE_CHECKING:
-    pass
+
+def _bigint() -> TypeEngine[Any]:
+    """SQLite 호환 BigInteger — 테스트(SQLite)에서는 Integer 로 동작."""
+    return BigInteger().with_variant(Integer(), "sqlite")
 
 
 class Tenant(Base, TimestampMixin):
@@ -49,10 +46,10 @@ class Tenant(Base, TimestampMixin):
         Integer, nullable=False, default=10000, server_default="10000"
     )
 
-    shops: Mapped[list["Shop"]] = relationship(
+    shops: Mapped[list[Shop]] = relationship(
         "Shop", back_populates="tenant", cascade="all, delete-orphan"
     )
-    users: Mapped[list["User"]] = relationship(
+    users: Mapped[list[User]] = relationship(
         "User", back_populates="tenant", cascade="all, delete-orphan"
     )
 
@@ -73,7 +70,7 @@ class Shop(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     business_number: Mapped[str | None] = mapped_column(String(20), nullable=True)
 
-    tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="shops")
+    tenant: Mapped[Tenant] = relationship("Tenant", back_populates="shops")
 
 
 class User(Base, TimestampMixin):
@@ -104,4 +101,4 @@ class User(Base, TimestampMixin):
         DateTime(timezone=True), nullable=True
     )
 
-    tenant: Mapped["Tenant"] = relationship("Tenant", back_populates="users")
+    tenant: Mapped[Tenant] = relationship("Tenant", back_populates="users")

@@ -84,9 +84,9 @@ class ProcurementOrder(Base, TimestampMixin):
         server_default="draft",
     )
 
-    tenant: Mapped["Tenant"] = relationship("Tenant", lazy="raise")
-    shop: Mapped["Shop"] = relationship("Shop", lazy="raise")
-    results: Mapped[list["ProcurementResult"]] = relationship(
+    tenant: Mapped[Tenant] = relationship("Tenant", lazy="raise")
+    shop: Mapped[Shop] = relationship("Shop", lazy="raise")
+    results: Mapped[list[ProcurementResult]] = relationship(
         "ProcurementResult",
         back_populates="order",
         cascade="all, delete-orphan",
@@ -145,7 +145,7 @@ class ProcurementResult(Base):
         nullable=False,
     )
 
-    order: Mapped["ProcurementOrder"] = relationship(
+    order: Mapped[ProcurementOrder] = relationship(
         "ProcurementOrder", back_populates="results"
     )
-    tenant: Mapped["Tenant"] = relationship("Tenant", lazy="raise")
+    tenant: Mapped[Tenant] = relationship("Tenant", lazy="raise")

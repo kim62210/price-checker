@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from redis.asyncio import Redis, from_url
+from redis.asyncio import Redis
 
 from app.core.config import Settings, get_settings
 
@@ -13,7 +13,7 @@ def get_redis(settings: Settings | None = None) -> Redis:
     global _redis
     if _redis is None:
         settings = settings or get_settings()
-        _redis = from_url(
+        _redis = Redis.from_url(
             settings.redis_url,
             encoding="utf-8",
             decode_responses=True,

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 from httpx import AsyncClient
@@ -114,10 +114,10 @@ async def test_quota_key_format(fake_redis, small_quota_tenant, settings):
 async def test_quota_ttl_set_to_next_month(fake_redis, small_quota_tenant):
     """첫 호출 시 TTL 이 다음달 1일 00:00 KST 로 설정된다."""
     from app.services.quota_service import (
+        _current_year_month_kst,
+        _next_month_first_kst_epoch,
         check_and_consume,
         tenant_quota_key,
-        _next_month_first_kst_epoch,
-        _current_year_month_kst,
     )
 
     await check_and_consume(

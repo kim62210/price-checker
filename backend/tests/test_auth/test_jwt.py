@@ -28,7 +28,7 @@ async def test_access_token_round_trip(settings):
 @pytest.mark.asyncio
 async def test_access_token_expiry(settings):
     """만료된 access token → InvalidJWTError."""
-    from app.auth.jwt import InvalidJWTError, encode_access_token, decode_access_token
+    from app.auth.jwt import InvalidJWTError, decode_access_token, encode_access_token
 
     past = datetime.now(UTC) - timedelta(minutes=settings.jwt_access_ttl_minutes + 5)
     token, _, _ = encode_access_token(
@@ -79,7 +79,7 @@ async def test_refresh_token_round_trip(settings):
 @pytest.mark.asyncio
 async def test_refresh_token_expiry(settings):
     """만료된 refresh token → InvalidJWTError."""
-    from app.auth.jwt import InvalidJWTError, encode_refresh_token, decode_refresh_token
+    from app.auth.jwt import InvalidJWTError, decode_refresh_token, encode_refresh_token
 
     past = datetime.now(UTC) - timedelta(days=settings.jwt_refresh_ttl_days + 1)
     token, _, _ = encode_refresh_token(user_id=1, settings=settings, now=past)
@@ -92,7 +92,7 @@ async def test_refresh_token_expiry(settings):
 @pytest.mark.asyncio
 async def test_wrong_token_type_mismatch(settings):
     """access token 을 refresh decoder 로 디코딩 → InvalidJWTError."""
-    from app.auth.jwt import InvalidJWTError, encode_access_token, decode_refresh_token
+    from app.auth.jwt import InvalidJWTError, decode_refresh_token, encode_access_token
 
     token, _, _ = encode_access_token(user_id=1, tenant_id=1, settings=settings)
     with pytest.raises(InvalidJWTError):
