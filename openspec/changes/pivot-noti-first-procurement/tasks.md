@@ -24,10 +24,10 @@
 
 ## 4. Recipient and Consent APIs
 
-- [ ] 4.1 Implement recipient create/list/read/update/deactivate service methods with phone normalization and tenant isolation.
-- [ ] 4.2 Implement consent grant/revoke service methods with channel-specific consent records and evidence metadata.
-- [ ] 4.3 Implement API routes for recipient and consent management protected by `get_current_tenant`.
-- [ ] 4.4 Add tests for recipient CRUD, phone normalization, consent grant/revoke, and cross-tenant access blocking.
+- [x] 4.1 Implement recipient create/list/read/update/deactivate service methods with phone normalization and tenant isolation.
+- [x] 4.2 Implement consent grant/revoke service methods with channel-specific consent records and evidence metadata.
+- [x] 4.3 Implement API routes for recipient and consent management protected by `get_current_tenant`.
+- [x] 4.4 Add tests for recipient CRUD, phone normalization, consent grant/revoke, and cross-tenant access blocking.
 
 ## 5. Template Management
 
