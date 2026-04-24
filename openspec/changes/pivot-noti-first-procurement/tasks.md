@@ -47,12 +47,12 @@
 
 ## 7. Dispatch, Providers, and Fallback
 
-- [ ] 7.1 Implement `NotificationProvider` interface with normalized success, retryable failure, and permanent failure result types.
-- [ ] 7.2 Implement fake provider adapters for tests and local development.
-- [ ] 7.3 Implement Kakao Alimtalk provider adapter boundary using provider configuration without hardcoding a specific dealer API into domain services.
-- [ ] 7.4 Implement SMS/LMS provider adapter boundary and fallback body handling.
-- [ ] 7.5 Implement SMS fallback creation for fallback-eligible Alimtalk failures while enforcing consent and advertising policy.
-- [ ] 7.6 Add tests for provider success, transient failure, permanent failure, SMS fallback creation, and fallback blocking by consent policy.
+- [x] 7.1 Implement `NotificationProvider` interface with normalized success, retryable failure, and permanent failure result types.
+- [x] 7.2 Implement fake provider adapters for tests and local development.
+- [x] 7.3 Implement Kakao Alimtalk provider adapter boundary using provider configuration without hardcoding a specific dealer API into domain services.
+- [x] 7.4 Implement SMS/LMS provider adapter boundary and fallback body handling.
+- [x] 7.5 Implement SMS fallback creation for fallback-eligible Alimtalk failures while enforcing consent and advertising policy.
+- [x] 7.6 Add tests for provider success, transient failure, permanent failure, SMS fallback creation, and fallback blocking by consent policy.
 
 ## 8. Outbox Worker, Retry, and Idempotency
 
