@@ -12,7 +12,7 @@
 - Webhook 이벤트 3종 처리: `PAYMENT.DONE`, `PAYMENT.FAILED`, `BILLING.CANCELED`. `event_id` 기반 멱등 처리로 중복 수신 방어.
 - 백엔드 API 6종: `POST /api/v1/billing/register`, `POST /api/v1/billing/subscribe`, `POST /api/v1/billing/cancel`, `GET /api/v1/billing/status`, `POST /api/v1/billing/webhook`, `GET /api/v1/billing/invoices`.
 - Arq 스케줄러: 매일 새벽 2시(KST) 실행, `next_billing_at <= NOW() AND status = 'active'` 대상에게 빌링 API 호출. 성공 시 `next_billing_at += 1 month`, 실패 시 `billing_retries` 큐잉.
-- 구독 상태 미들웨어: `suspended` 테넌트는 앱 접근 차단(결제 복구 UI만 노출).
+- 구독 상태 미들웨어: `suspended` 테넌트는 신규 조달/알림 dispatch를 차단하고, 결제 복구 안내는 Noti-first notification channel로 전달한다.
 - 해지 시 현재 billing cycle 종료까지 활성 유지(즉시 환불 없음).
 
 ## Capabilities
@@ -28,7 +28,7 @@
 
 ## Impact
 
-- **선행 의존**: `pivot-backend-multi-tenant` (tenants·auth 구조 선행 필요). `tauri-desktop-mvp`와는 독립적이나 UI 연동 필요.
+- **선행 의존**: `pivot-backend-multi-tenant` (tenants·auth 구조 선행 필요). `pivot-noti-first-procurement` 이후 결제 복구·실패 커뮤니케이션은 UI 연동이 아니라 notification channel 연동을 기준으로 한다.
 - **신규 코드**: `backend/app/billing/` 전체 패키지(models, toss_client, service, webhook, scheduler, router, plans), 구독 상태 차단 미들웨어(`backend/app/core/middleware.py` 갱신).
 - **신규 테이블**: `subscriptions`, `payment_events`, `billing_retries` (Alembic 마이그레이션 1건).
 - **의존성**: `httpx[http2]`(기존), `arq`(기존), `redis`(기존). 신규 패키지 추가 없음.
