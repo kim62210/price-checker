@@ -9,7 +9,7 @@ help:
 	@echo "  install            - 백엔드 의존성 설치 (pip + dev)"
 	@echo "  install-ui         - Ops Admin 웹 의존성 설치 (pnpm)"
 	@echo "  dev                - Docker Compose 로 전체 스택 기동"
-	@echo "  dev-ui             - Ops Admin 웹 Vite 개발 서버 기동"
+	@echo "  dev-ui             - Ops Admin 웹 Next.js 개발 서버 기동 (127.0.0.1:5174)"
 	@echo "  dev-api            - 로컬 uvicorn 기동"
 	@echo "  test               - pytest + 커버리지"
 	@echo "  test-ui            - UI unit tests (vitest)"
