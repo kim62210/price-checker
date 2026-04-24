@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import type {
   OrderCreatePayload,
@@ -86,6 +86,19 @@ export function useOrderResultsQuery(id: number | null) {
     queryKey: queryKeys.orderResults(id ?? -1),
     queryFn: () => fetchOrderResults(id as number, toClientOptions(config)),
     enabled: isHydrated && isAuthorized && id !== null,
+  });
+}
+
+export function useMultiOrderResultsQuery(orderIds: number[]) {
+  const { config, isAuthorized, isHydrated } = useApiConfig();
+  const options = toClientOptions(config);
+  return useQueries({
+    queries: orderIds.map((id) => ({
+      queryKey: queryKeys.orderResults(id),
+      queryFn: () => fetchOrderResults(id, options),
+      enabled: isHydrated && isAuthorized,
+      staleTime: 30_000,
+    })),
   });
 }
 
