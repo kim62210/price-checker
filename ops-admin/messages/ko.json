@@ -78,6 +78,10 @@
     "description": "수집 작업 상태, 재시도, 운영 개입 포인트를 한 화면에서 정리합니다.",
     "tabs": {
       "all": "전체",
+      "draft": "Draft",
+      "collecting": "수집 중",
+      "completed": "완료",
+      "cancelled": "취소",
       "running": "실행 중",
       "retry": "재시도 예정",
       "failed": "실패",
@@ -96,10 +100,21 @@
       "source": "소스",
       "attempts": "시도",
       "queued": "대기 시작",
-      "finished": "완료"
+      "finished": "완료",
+      "quantity": "수량",
+      "actions": "액션"
     },
+    "search": "주문·상품 검색",
     "actions": {
-      "triggerCollect": "수집 재시도"
+      "triggerCollect": "수집 재시도",
+      "triggered": "수집 작업을 예약했습니다"
+    },
+    "detail": {
+      "summary": "주문 정보",
+      "quantity": "수량",
+      "targetUnitPrice": "목표 단가",
+      "shop": "매장",
+      "createdAt": "등록"
     }
   },
   "results": {

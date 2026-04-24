@@ -78,6 +78,10 @@
     "description": "Consolidates collection job status, retries, and operator escalation points.",
     "tabs": {
       "all": "All",
+      "draft": "Draft",
+      "collecting": "Collecting",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
       "running": "Running",
       "retry": "Retry scheduled",
       "failed": "Failed",
@@ -96,10 +100,21 @@
       "source": "Source",
       "attempts": "Attempts",
       "queued": "Queued",
-      "finished": "Finished"
+      "finished": "Finished",
+      "quantity": "Qty",
+      "actions": "Actions"
     },
+    "search": "Search orders or products",
     "actions": {
-      "triggerCollect": "Retry collection"
+      "triggerCollect": "Retry collection",
+      "triggered": "Collection job scheduled"
+    },
+    "detail": {
+      "summary": "Order info",
+      "quantity": "Quantity",
+      "targetUnitPrice": "Target unit price",
+      "shop": "Shop",
+      "createdAt": "Created"
     }
   },
   "results": {
