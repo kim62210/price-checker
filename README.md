@@ -6,7 +6,7 @@ B2B 조달 결과 알림 백엔드 (**멀티테넌트 피벗 완료, Noti-first 
 
 > **피벗 완료**: `openspec/changes/pivot-backend-multi-tenant/` 변경 스펙의 Wave 1~4 구현이 모두 반영됐다. 크롤링 기반 MVP 에서 JWT + 카카오/네이버 OAuth 인증·멀티테넌트·조달 업로드·테넌트 스코프 검색 구조로 전환됐다.
 >
-> **신규 제품 방향**: `openspec/changes/pivot-noti-first-procurement/` 변경 스펙이 Tauri/React 중심 사용자 UI를 supersede한다. 사용자-facing 표면은 카카오 알림톡 + SMS/LMS fallback이며, Tauri 자산은 내부 파서 QA·운영자 디버깅·향후 optional ingestion 실험용 도구로만 취급한다.
+> **신규 제품 방향**: `openspec/changes/pivot-noti-first-procurement/` 변경 스펙에 따라 설치형 Tauri 앱은 중단·제거됐다. 사용자-facing 표면은 카카오 알림톡 + SMS/LMS fallback이며, 운영자용 화면은 별도 `ops-admin/` 웹 백오피스로 관리한다.
 
 ---
 
@@ -37,19 +37,19 @@ make dev-api         # 로컬 uvicorn 만
 - 가격 리마인더·프로모션성 메시지: 명시적 마케팅 동의가 있는 채널/브랜드 메시지
 - 상세 UI/대시보드: Post-MVP 또는 내부 운영 도구
 
-## 내부 도구: Tauri / React
+## 운영 백오피스: Ops Admin Web
 
-`tauri-app/` 은 사용자-facing 제품 표면이 아니라 내부 파서 QA, 운영자 디버깅, 향후 optional ingestion 실험용 도구로 유지한다.
+`ops-admin/` 은 React + TypeScript + Vite 기반의 독립 웹 백오피스다. 조달 수집 작업, 수집 결과, Noti-first 알림 추적, 내부 파서 실험 데이터를 운영자가 확인하는 용도로 사용한다.
 
 ```bash
 make install-ui
-make dev-ui          # http://localhost:5173
+make dev-ui          # http://127.0.0.1:5174
 make typecheck-ui
 make test-ui
 make build-ui
 ```
 
-현재 Tauri Rust 명령은 쿠팡/네이버 검색 페이지와 후보 상세 페이지를 직접 조회·파싱해 비교 결과를 만들 수 있지만, 이 경로는 내부 검증용이다. 사용자-facing 결과 전달은 `pivot-noti-first-procurement`의 notification workflow가 담당한다.
+API 연결 전에는 안전한 샘플 데이터로 화면 구조를 확인할 수 있고, 운영 백엔드 URL과 Bearer 토큰을 입력하면 `/api/v1/procurement` 및 `/api/v1/notifications` 계열 API를 통해 실데이터를 동기화한다. 사용자-facing 결과 전달은 여전히 `pivot-noti-first-procurement`의 notification workflow가 담당한다.
 
 ## 주요 엔드포인트
 

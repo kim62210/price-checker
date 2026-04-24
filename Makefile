@@ -1,15 +1,15 @@
 .PHONY: help install install-ui dev dev-ui dev-api test test-ui lint format typecheck typecheck-ui build-ui migrate revision up down logs clean
 
 BACKEND_DIR := backend
-FRONTEND_DIR := tauri-app
+FRONTEND_DIR := ops-admin
 COMPOSE_FILE := infra/docker-compose.yml
 
 help:
 	@echo "사용 가능한 타겟:"
 	@echo "  install            - 백엔드 의존성 설치 (pip + dev)"
-	@echo "  install-ui         - Tauri UI 의존성 설치 (pnpm)"
+	@echo "  install-ui         - Ops Admin 웹 의존성 설치 (pnpm)"
 	@echo "  dev                - Docker Compose 로 전체 스택 기동"
-	@echo "  dev-ui             - Tauri UI Vite 개발 서버 기동"
+	@echo "  dev-ui             - Ops Admin 웹 Vite 개발 서버 기동"
 	@echo "  dev-api            - 로컬 uvicorn 기동"
 	@echo "  test               - pytest + 커버리지"
 	@echo "  test-ui            - UI unit tests (vitest)"
@@ -44,7 +44,7 @@ test:
 	cd $(BACKEND_DIR) && pytest --cov=app --cov-report=term-missing --cov-report=html
 
 test-ui:
-	cd $(FRONTEND_DIR) && pnpm test -- --run
+	cd $(FRONTEND_DIR) && pnpm test
 
 lint:
 	cd $(BACKEND_DIR) && ruff check app tests
