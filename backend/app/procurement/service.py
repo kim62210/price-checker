@@ -13,6 +13,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.logging import get_logger
+from app.notifications.service import NotificationDeliveryService
 from app.procurement.models import ProcurementOrder, ProcurementResult
 from app.procurement.schemas import OrderCreate, ResultUpload, SummaryReport
 from app.services.quota_service import check_and_consume
@@ -168,6 +169,15 @@ class ProcurementService:
             result_id=record.id,
             source=record.source,
         )
+        if order.status == "completed":
+            await NotificationDeliveryService(self._session).create_procurement_result_event(
+                tenant_id=tenant_id,
+                order_id=order.id,
+                result_id=record.id,
+                shop_id=order.shop_id,
+                product_name=order.product_name,
+                best_price=record.per_unit_price,
+            )
         return record
 
     async def list_results_by_order(

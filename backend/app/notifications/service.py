@@ -14,6 +14,9 @@ from app.core.exceptions import NotificationPolicyError, ServiceError
 from app.core.logging import get_logger
 from app.notifications.models import (
     NotificationConsent,
+    NotificationDeadLetter,
+    NotificationDelivery,
+    NotificationOutboxEvent,
     NotificationRecipient,
     NotificationTemplate,
     NotificationTemplateVersion,
@@ -458,3 +461,196 @@ class NotificationTemplateService:
             return str(variables[name])
 
         return _VARIABLE_PATTERN.sub(_replace, text)
+
+
+class NotificationDeliveryService:
+    """도메인 이벤트를 delivery 로 확장하는 서비스."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+        self._templates = NotificationTemplateService(session)
+
+    async def create_procurement_result_event(
+        self,
+        *,
+        tenant_id: int,
+        order_id: int,
+        result_id: int,
+        shop_id: int,
+        product_name: str,
+        best_price: object,
+        failure_state: str | None = None,
+    ) -> NotificationOutboxEvent:
+        shop_name = await self._get_shop_name(tenant_id=tenant_id, shop_id=shop_id)
+        payload = {
+            "status": "failed" if failure_state else "success",
+            "failure_state": failure_state,
+            "order_id": order_id,
+            "result_id": result_id,
+            "shop_id": shop_id,
+            "shop_name": shop_name,
+            "product_name": product_name,
+            "best_price": str(best_price),
+        }
+        event = NotificationOutboxEvent(
+            tenant_id=tenant_id,
+            event_type="procurement.result.completed",
+            aggregate_type="procurement_result",
+            aggregate_id=result_id,
+            payload=payload,
+            idempotency_key=f"procurement_result:{tenant_id}:{result_id}",
+            status="pending",
+        )
+        self._session.add(event)
+        try:
+            await self._session.flush()
+        except IntegrityError:
+            existing = await self._get_outbox_by_idempotency(event.idempotency_key)
+            if existing is None:
+                raise
+            return existing
+
+        await self.expand_procurement_result_event(event)
+        await self._session.refresh(event)
+        return event
+
+    async def expand_procurement_result_event(
+        self, event: NotificationOutboxEvent
+    ) -> list[NotificationDelivery]:
+        recipients = await self._active_recipients(tenant_id=event.tenant_id)
+        if not recipients:
+            await self._dead_letter(
+                tenant_id=event.tenant_id,
+                outbox_event_id=event.id,
+                reason="no_active_recipients",
+                envelope=event.payload,
+                recoverable=True,
+            )
+            event.status = "published"
+            await self._session.flush()
+            return []
+
+        template_version = await self._approved_template_version(
+            tenant_id=event.tenant_id,
+            template_code="procurement_result",
+        )
+        if template_version is None:
+            await self._dead_letter(
+                tenant_id=event.tenant_id,
+                outbox_event_id=event.id,
+                reason="missing_procurement_result_template",
+                envelope=event.payload,
+                recoverable=True,
+            )
+            event.status = "published"
+            await self._session.flush()
+            return []
+
+        deliveries: list[NotificationDelivery] = []
+        for recipient in recipients:
+            rendered = self._templates.render_version(template_version, variables=event.payload)
+            delivery = NotificationDelivery(
+                tenant_id=event.tenant_id,
+                outbox_event_id=event.id,
+                procurement_order_id=int(event.payload["order_id"]),
+                recipient_id=recipient.id,
+                template_version_id=template_version.id,
+                channel=template_version.channel,
+                purpose=template_version.purpose,
+                status="ready",
+                idempotency_key=(
+                    f"{event.event_type}:{event.aggregate_id}:{recipient.id}:"
+                    f"{template_version.channel}:{template_version.id}"
+                ),
+                rendered_title=rendered.title,
+                rendered_body=rendered.body,
+                rendered_fallback_body=rendered.fallback_body,
+                variable_payload=rendered.variables,
+            )
+            self._session.add(delivery)
+            deliveries.append(delivery)
+        event.status = "published"
+        await self._session.flush()
+        for delivery in deliveries:
+            await self._session.refresh(delivery)
+        logger.info(
+            "notification_deliveries_created",
+            tenant_id=event.tenant_id,
+            outbox_event_id=event.id,
+            delivery_count=len(deliveries),
+        )
+        return deliveries
+
+    async def _get_shop_name(self, *, tenant_id: int, shop_id: int) -> str:
+        stmt = select(Shop.name).where(Shop.id == shop_id, Shop.tenant_id == tenant_id)
+        name = (await self._session.execute(stmt)).scalar_one_or_none()
+        return str(name or "매장")
+
+    async def _active_recipients(self, *, tenant_id: int) -> list[NotificationRecipient]:
+        stmt = select(NotificationRecipient).where(
+            NotificationRecipient.tenant_id == tenant_id,
+            NotificationRecipient.is_active.is_(True),
+        )
+        result = await self._session.execute(stmt)
+        return list(result.scalars().all())
+
+    async def _approved_template_version(
+        self,
+        *,
+        tenant_id: int,
+        template_code: str,
+    ) -> NotificationTemplateVersion | None:
+        stmt = (
+            select(NotificationTemplateVersion)
+            .join(NotificationTemplate, NotificationTemplate.id == NotificationTemplateVersion.template_id)
+            .where(
+                NotificationTemplate.tenant_id == tenant_id,
+                NotificationTemplate.template_code == template_code,
+                NotificationTemplate.is_active.is_(True),
+                NotificationTemplateVersion.tenant_id == tenant_id,
+                NotificationTemplateVersion.channel == "kakao_alimtalk",
+                NotificationTemplateVersion.purpose == "transactional",
+                NotificationTemplateVersion.review_status == "approved",
+            )
+            .order_by(NotificationTemplateVersion.version.desc())
+            .limit(1)
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def _dead_letter(
+        self,
+        *,
+        tenant_id: int,
+        outbox_event_id: int,
+        reason: str,
+        envelope: dict[str, object],
+        recoverable: bool,
+    ) -> NotificationDeadLetter:
+        dead_letter = NotificationDeadLetter(
+            tenant_id=tenant_id,
+            outbox_event_id=outbox_event_id,
+            reason=reason,
+            envelope=envelope,
+            recoverable=recoverable,
+        )
+        self._session.add(dead_letter)
+        await self._session.flush()
+        await self._session.refresh(dead_letter)
+        logger.warning(
+            "notification_dead_letter_created",
+            tenant_id=tenant_id,
+            outbox_event_id=outbox_event_id,
+            reason=reason,
+        )
+        return dead_letter
+
+    async def _get_outbox_by_idempotency(
+        self,
+        idempotency_key: str,
+    ) -> NotificationOutboxEvent | None:
+        stmt = select(NotificationOutboxEvent).where(
+            NotificationOutboxEvent.idempotency_key == idempotency_key
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
