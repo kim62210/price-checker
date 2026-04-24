@@ -51,6 +51,17 @@ class QuotaExceededError(ServiceError):
     detail = "quota_exceeded"
 
 
+class NotificationPolicyError(ServiceError):
+    code = "NOTIFICATION_POLICY_ERROR"
+    http_status = status.HTTP_400_BAD_REQUEST
+    detail = "notification_policy_error"
+
+
+class NotificationProviderError(UpstreamError):
+    code = "NOTIFICATION_PROVIDER_ERROR"
+    detail = "notification_provider_error"
+
+
 class BotBlockedError(UpstreamError):
     code = "BOT_BLOCKED"
     http_status = status.HTTP_502_BAD_GATEWAY

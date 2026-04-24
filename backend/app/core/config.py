@@ -76,6 +76,19 @@ class Settings(BaseSettings):
     # ----- Tenant defaults -----
     default_tenant_api_quota_monthly: int = Field(default=10_000, ge=0)
 
+    # ----- Notifications -----
+    notification_provider_mode: Literal["fake", "sandbox", "production"] = "fake"
+    notification_retry_max_attempts: int = Field(default=3, ge=1)
+    notification_retry_base_seconds: int = Field(default=60, ge=1)
+    notification_quota_monthly: int = Field(default=1_000, ge=0)
+    notification_webhook_secret: SecretStr = Field(default=SecretStr(""))
+    kakao_bizmessage_api_url: str = Field(default="")
+    kakao_bizmessage_api_key: SecretStr = Field(default=SecretStr(""))
+    kakao_sender_profile_key: SecretStr = Field(default=SecretStr(""))
+    sms_provider_api_url: str = Field(default="")
+    sms_provider_api_key: SecretStr = Field(default=SecretStr(""))
+    sms_default_sender_phone: str = Field(default="")
+
     @property
     def cors_allow_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
