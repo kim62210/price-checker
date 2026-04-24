@@ -8,6 +8,8 @@ from typing import Literal
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.price_collection.exceptions import CollectionConfigError
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -26,6 +28,12 @@ class Settings(BaseSettings):
 
     search_cache_ttl_seconds: int = Field(default=600, ge=0)
     option_cache_ttl_seconds: int = Field(default=24 * 3600, ge=0)
+    naver_search_base_url: str = Field(default="https://openapi.naver.com")
+    naver_search_client_id: SecretStr = Field(default=SecretStr(""))
+    naver_search_client_secret: SecretStr = Field(default=SecretStr(""))
+    naver_search_display_limit: int = Field(default=20, ge=1, le=100)
+    price_collection_max_attempts: int = Field(default=3, ge=1)
+    price_collection_retry_base_seconds: int = Field(default=60, ge=1)
 
     request_jitter_min_ms: int = Field(default=500, ge=0)
     request_jitter_max_ms: int = Field(default=2_000, ge=0)
@@ -92,6 +100,12 @@ class Settings(BaseSettings):
     @property
     def cors_allow_origins_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_allow_origins.split(",") if origin.strip()]
+
+    def validate_price_collection_config(self) -> None:
+        if not self.naver_search_client_id.get_secret_value().strip():
+            raise CollectionConfigError("NAVER_SEARCH_CLIENT_ID is required")
+        if not self.naver_search_client_secret.get_secret_value().strip():
+            raise CollectionConfigError("NAVER_SEARCH_CLIENT_SECRET is required")
 
 
 @lru_cache(maxsize=1)
