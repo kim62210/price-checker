@@ -6,7 +6,7 @@
 - **법적 리스크**: 대법원 2017(잡코리아 vs 사람인)·2022(2021도1533) 판례로 공개 서비스에서의 경쟁사 DB 크롤링은 부정경쟁행위·데이터베이스권 침해로 확정 손해배상 대상이다. 네이버·쿠팡 이용약관 위반은 서비스 차단·계정 영구 정지의 직접 근거.
 - **비즈니스 리스크**: 친구용 용도를 벗어나 유료 테넌트(소매점)에 크롤링 결과를 제공하면 "영업 목적 무단 수집"으로 판례상 가장 불리한 포지션.
 
-피벗 방향은 **테넌트(소매점)가 직접 로그인한 세션에서 브라우저 확장·Tauri 데스크톱 앱이 DOM을 파싱해 백엔드로 업로드**하는 구조다. 백엔드는 더 이상 크롤링하지 않고, 테넌트별 데이터 격리·OAuth 인증·발주 이력 관리·리포트 집계만 담당한다. 이를 위해 현재 단일 사용자 전제의 백엔드를 **multi-tenant**로 재설계해야 한다.
+피벗 방향은 **테넌트(소매점) 스코프의 인증된 ingestion client가 수집·정규화한 결과를 백엔드로 업로드**하는 구조다. 브라우저 확장·Tauri 데스크톱 앱은 optional/internal ingestion client일 뿐 canonical product surface가 아니다. 백엔드는 더 이상 크롤링하지 않고, 테넌트별 데이터 격리·OAuth 인증·발주 이력 관리·리포트 집계만 담당한다. 이를 위해 현재 단일 사용자 전제의 백엔드를 **multi-tenant**로 재설계해야 한다.
 
 ## What Changes
 
@@ -69,7 +69,7 @@
 
 ### 사용자
 - **친구용 도구 사용자(= 본인 + 친구 몇 명)**: 기존 `/api/v1/search?q=...` 단일 검색 엔드포인트는 호환성 유지 불가. 피벗 시점에 읽기 전용으로 동결하거나 사용자에게 종료 공지 후 차단한다. 기존 DB 데이터는 버리고 깨끗한 schema로 시작한다(마이그레이션 없음).
-- **신규 B2B 테넌트**: 카카오·네이버 OAuth로 가입 → 소매점 등록 → 브라우저 확장·Tauri 앱 설치 → 발주 주문 등록 → 자동 수집·절감액 리포트.
+- **신규 B2B 테넌트**: 카카오·네이버 OAuth로 가입 → 소매점 등록 → 발주 주문 등록 → 인증된 ingestion client 또는 내부 운영 도구로 결과 수집 → Noti-first 알림으로 조달 결과 수신.
 
 ### 코드베이스
 - **삭제**: 약 825줄 (collectors 전체) + `/scraper/` 디렉토리 + `ui/streamlit_app.py` + `services/detail_cache_service.py` + 관련 테스트
@@ -96,7 +96,7 @@
 - **기존 친구용 사용자 대응**: README·`.env.example` 상단에 "친구용 버전은 `main@c4a8b2b` 태그 이전에서 사용하세요" 고지.
 
 ### 타 영역 제안과의 연관
-- **영역 B (Frontend Tauri)**: 본 영역에서 정의한 `tenancy`·`auth-oauth`·`procurement-orders` API 를 사용. JWT access token 흐름이 기준.
-- **영역 C (Browser Extension)**: `procurement-results` 업로드 API 의 첫 클라이언트.
+- **영역 B (Frontend Tauri)**: `pivot-noti-first-procurement` 이후 사용자-facing 제품 범위에서 제외된다. 내부 파서 QA·운영자 디버깅·optional ingestion 실험 도구로만 유지한다.
+- **영역 C (Browser Extension)**: optional ingestion client 후보이며, Noti-first 알림 워크플로의 필수 구성요소가 아니다.
 - **영역 D (Billing/Subscriptions)**: `tenants.plan` 컬럼과 `subscriptions` 테이블 FK 예약 — 본 스펙에서는 필드만 준비하고 실제 구독 로직은 영역 D 제안 책임.
 - **영역 E (Admin/Ops)**: 관측성·백오피스. `tenants`·`procurement_orders` 읽기 전용 뷰가 전제.
