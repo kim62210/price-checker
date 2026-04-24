@@ -1,10 +1,12 @@
 # lowest-price
 
-B2B 조달 SaaS 백엔드 (**멀티테넌트 피벗 완료**).
+B2B 조달 결과 알림 백엔드 (**멀티테넌트 피벗 완료, Noti-first 전환 진행 중**).
 
-테넌트별 발주 이력과 업로드된 상품 옵션 데이터를 기반으로 "배송비 포함 개당 실가" 오름차순 비교·리포트를 제공한다.
+테넌트별 발주 이력과 업로드된 상품 옵션 데이터를 기반으로 "배송비 포함 개당 실가"를 계산하고, 사용자가 별도 UI를 열지 않아도 카카오 알림톡·SMS fallback으로 조달 결과와 재확인 필요 상태를 전달하는 방향으로 전환 중이다.
 
 > **피벗 완료**: `openspec/changes/pivot-backend-multi-tenant/` 변경 스펙의 Wave 1~4 구현이 모두 반영됐다. 크롤링 기반 MVP 에서 JWT + 카카오/네이버 OAuth 인증·멀티테넌트·조달 업로드·테넌트 스코프 검색 구조로 전환됐다.
+>
+> **신규 제품 방향**: `openspec/changes/pivot-noti-first-procurement/` 변경 스펙이 Tauri/React 중심 사용자 UI를 supersede한다. 사용자-facing 표면은 카카오 알림톡 + SMS/LMS fallback이며, Tauri 자산은 내부 파서 QA·운영자 디버깅·향후 optional ingestion 실험용 도구로만 취급한다.
 
 ---
 
@@ -26,9 +28,18 @@ make dev-api         # 로컬 uvicorn 만
 - 헬스 체크: `curl http://localhost:8000/health/live`
 
 
-## 데스크톱 UI (Tauri / React)
+## 제품 방향: Noti-first 조달 알림
 
-이번 UI/UX 구현으로 `tauri-app/` 이 추가됐다. 사장님용 발주 입력, 쿠팡/네이버 세션 안내, 개당 실가 비교표, 절감 리포트 화면을 제공하는 React + TypeScript + Vite 기반 데스크톱 UI 스켈레톤이다.
+신규 수요조사 결과, 사장님이 별도 데스크톱 앱에 접속해 비교표를 탐색하는 방식보다 조달 결과·견적 완료·재확인 필요 상태를 카카오톡/SMS로 즉시 받아보는 방식의 효용이 더 높다고 판단했다. 따라서 MVP의 사용자-facing 흐름은 다음을 우선한다.
+
+- 조달 결과·견적 완료·발주 상태: 카카오 알림톡
+- 카카오 미도달/실패: SMS/LMS fallback
+- 가격 리마인더·프로모션성 메시지: 명시적 마케팅 동의가 있는 채널/브랜드 메시지
+- 상세 UI/대시보드: Post-MVP 또는 내부 운영 도구
+
+## 내부 도구: Tauri / React
+
+`tauri-app/` 은 사용자-facing 제품 표면이 아니라 내부 파서 QA, 운영자 디버깅, 향후 optional ingestion 실험용 도구로 유지한다.
 
 ```bash
 make install-ui
@@ -38,7 +49,7 @@ make test-ui
 make build-ui
 ```
 
-현재 Tauri Rust 명령은 사장님 PC에서 쿠팡/네이버 검색 페이지와 후보 상세 페이지를 직접 조회·파싱해 UI 비교 결과를 만들고, API 연결 시 기존 조달 엔드포인트로 발주/결과를 저장한다. 로그인 전용 foreground WebView 자동화와 상세 페이지 옵션 파싱 고도화는 후속 범위다.
+현재 Tauri Rust 명령은 쿠팡/네이버 검색 페이지와 후보 상세 페이지를 직접 조회·파싱해 비교 결과를 만들 수 있지만, 이 경로는 내부 검증용이다. 사용자-facing 결과 전달은 `pivot-noti-first-procurement`의 notification workflow가 담당한다.
 
 ## 주요 엔드포인트
 
@@ -78,6 +89,7 @@ make build-ui
 
 - [IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md) — 조사 결과와 핵심 제약
 - [openspec/changes/pivot-backend-multi-tenant/](./openspec/changes/pivot-backend-multi-tenant/) — B2B 멀티테넌트 피벗 스펙 (proposal / design / specs / tasks)
+- [openspec/changes/pivot-noti-first-procurement/](./openspec/changes/pivot-noti-first-procurement/) — Noti-first 조달 결과 알림 피벗 스펙 (proposal / design / specs / tasks)
 
 ## 테스트
 
