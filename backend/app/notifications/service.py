@@ -618,6 +618,103 @@ class NotificationDeliveryService:
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
 
+    async def create_sms_fallback_for_delivery(
+        self,
+        *,
+        tenant_id: int,
+        delivery_id: int,
+        reason: str,
+    ) -> NotificationDelivery | None:
+        original = await self._get_delivery(tenant_id=tenant_id, delivery_id=delivery_id)
+        if original is None or original.channel != "kakao_alimtalk":
+            return None
+        if not await self._has_active_consent(
+            tenant_id=tenant_id,
+            recipient_id=original.recipient_id,
+            consent_type="sms_marketing",
+        ):
+            await self._dead_letter(
+                tenant_id=tenant_id,
+                outbox_event_id=original.outbox_event_id or 0,
+                reason="sms_fallback_consent_missing",
+                envelope={"delivery_id": original.id, "fallback_reason": reason},
+                recoverable=True,
+            )
+            return None
+        if original.rendered_fallback_body is None:
+            await self._dead_letter(
+                tenant_id=tenant_id,
+                outbox_event_id=original.outbox_event_id or 0,
+                reason="sms_fallback_body_missing",
+                envelope={"delivery_id": original.id, "fallback_reason": reason},
+                recoverable=True,
+            )
+            return None
+        fallback = NotificationDelivery(
+            tenant_id=tenant_id,
+            outbox_event_id=original.outbox_event_id,
+            procurement_order_id=original.procurement_order_id,
+            recipient_id=original.recipient_id,
+            template_version_id=original.template_version_id,
+            channel="sms",
+            purpose="fallback",
+            status="ready",
+            idempotency_key=f"{original.idempotency_key}:sms_fallback",
+            rendered_title=original.rendered_title,
+            rendered_body=original.rendered_fallback_body,
+            rendered_fallback_body=None,
+            variable_payload={**original.variable_payload, "fallback_reason": reason},
+        )
+        self._session.add(fallback)
+        try:
+            await self._session.flush()
+        except IntegrityError:
+            existing = await self._get_delivery_by_idempotency(fallback.idempotency_key)
+            if existing is None:
+                raise
+            return existing
+        await self._session.refresh(fallback)
+        logger.info(
+            "notification_sms_fallback_created",
+            tenant_id=tenant_id,
+            source_delivery_id=original.id,
+            fallback_delivery_id=fallback.id,
+        )
+        return fallback
+
+    async def _get_delivery(
+        self,
+        *,
+        tenant_id: int,
+        delivery_id: int,
+    ) -> NotificationDelivery | None:
+        stmt = select(NotificationDelivery).where(
+            NotificationDelivery.tenant_id == tenant_id,
+            NotificationDelivery.id == delivery_id,
+        )
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def _get_delivery_by_idempotency(self, idempotency_key: str) -> NotificationDelivery | None:
+        stmt = select(NotificationDelivery).where(NotificationDelivery.idempotency_key == idempotency_key)
+        result = await self._session.execute(stmt)
+        return result.scalar_one_or_none()
+
+    async def _has_active_consent(
+        self,
+        *,
+        tenant_id: int,
+        recipient_id: int,
+        consent_type: str,
+    ) -> bool:
+        stmt = select(NotificationConsent.id).where(
+            NotificationConsent.tenant_id == tenant_id,
+            NotificationConsent.recipient_id == recipient_id,
+            NotificationConsent.consent_type == consent_type,
+            NotificationConsent.revoked_at.is_(None),
+        )
+        return (await self._session.execute(stmt)).scalar_one_or_none() is not None
+
     async def _dead_letter(
         self,
         *,
