@@ -69,6 +69,7 @@ async def _load_matches(
         .where(
             ProcurementResult.tenant_id == tenant_id,
             ProcurementOrder.tenant_id == tenant_id,
+            ProcurementResult.compare_eligible.is_(True),
             or_(
                 ProcurementOrder.product_name.ilike(needle, escape="\\"),
                 ProcurementOrder.option_text.ilike(needle, escape="\\"),

@@ -262,6 +262,72 @@ async def test_search_force_refresh_bypasses_cache(
 
 
 @pytest.mark.asyncio
+async def test_search_ignores_compare_ineligible_results(
+    db_session: AsyncSession,
+    fake_redis,
+    test_tenant_a,
+    shop_a,
+    settings,
+):
+    """compare_eligible=False 결과는 검색 랭킹에서 제외된다."""
+    from app.procurement.models import ProcurementOrder, ProcurementResult
+    from app.services.search_service import run_search
+
+    order = ProcurementOrder(
+        tenant_id=test_tenant_a.id,
+        shop_id=shop_a.id,
+        product_name="서울우유",
+        quantity=10,
+        unit="개",
+        status="completed",
+    )
+    db_session.add(order)
+    await db_session.flush()
+
+    db_session.add(
+        ProcurementResult(
+            order_id=order.id,
+            tenant_id=test_tenant_a.id,
+            source="naver",
+            product_url="https://shopping.naver.com/partial",
+            listed_price=Decimal("1000.00"),
+            per_unit_price=Decimal("100.00"),
+            shipping_fee=Decimal("0"),
+            unit_count=1,
+            compare_eligible=False,
+            collected_at=datetime.now(UTC),
+        )
+    )
+    db_session.add(
+        ProcurementResult(
+            order_id=order.id,
+            tenant_id=test_tenant_a.id,
+            source="naver",
+            product_url="https://shopping.naver.com/eligible",
+            listed_price=Decimal("1500.00"),
+            per_unit_price=Decimal("150.00"),
+            shipping_fee=Decimal("0"),
+            unit_count=1,
+            compare_eligible=True,
+            collected_at=datetime.now(UTC),
+        )
+    )
+    await db_session.flush()
+
+    response = await run_search(
+        db_session,
+        tenant_id=test_tenant_a.id,
+        monthly_quota=10000,
+        query="서울우유",
+        limit=10,
+        settings=settings,
+    )
+
+    assert len(response.results) == 1
+    assert response.results[0].product_url == "https://shopping.naver.com/eligible"
+
+
+@pytest.mark.asyncio
 async def test_search_empty_result_hint(
     db_session: AsyncSession,
     fake_redis,
