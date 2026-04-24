@@ -44,6 +44,8 @@
     ".next",
     "out",
     "dist",
-    "coverage"
+    "coverage",
+    "tests/e2e",
+    "playwright.config.ts"
   ]
 }

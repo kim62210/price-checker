@@ -11,7 +11,7 @@ Lowest Price 운영 백오피스 (Next.js 16 LTS · App Router).
 
 ```bash
 pnpm install
-pnpm dev         # http://127.0.0.1:5174
+pnpm dev         # http://127.0.0.1:5175
 pnpm typecheck
 pnpm test
 pnpm build

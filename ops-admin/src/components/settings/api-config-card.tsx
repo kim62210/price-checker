@@ -32,7 +32,7 @@ export function ApiConfigCard() {
   const auth = useTranslations("auth");
   const common = useTranslations("common");
   const queryClient = useQueryClient();
-  const { config, isHydrated, setConfig, reset } = useApiConfig();
+  const { config, setConfig, reset } = useApiConfig();
 
   const [backendUrl, setBackendUrl] = useState(config.backendUrl);
   const [accessToken, setAccessToken] = useState(config.accessToken);
@@ -163,7 +163,7 @@ export function ApiConfigCard() {
           <Button
             onClick={handleTest}
             size="sm"
-            disabled={!isHydrated || testState.status === "testing"}
+            disabled={testState.status === "testing"}
           >
             {testState.status === "testing" ? (
               <Loader2 className="size-3 animate-spin" />
@@ -172,20 +172,10 @@ export function ApiConfigCard() {
             )}
             {t("connect")}
           </Button>
-          <Button
-            onClick={handleSave}
-            size="sm"
-            variant="secondary"
-            disabled={!isHydrated}
-          >
+          <Button onClick={handleSave} size="sm" variant="secondary">
             {t("save")}
           </Button>
-          <Button
-            onClick={handleReset}
-            size="sm"
-            variant="ghost"
-            disabled={!isHydrated}
-          >
+          <Button onClick={handleReset} size="sm" variant="ghost">
             {t("reset")}
           </Button>
         </div>
