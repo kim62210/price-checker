@@ -1,0 +1,225 @@
+/* ============================================================
+   Page-specific styles (cross-cutting patterns)
+   ============================================================ */
+
+[data-route] { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+[data-route][hidden] { display: none !important; }
+
+/* ---- Specific table columns ---- */
+.col-order  { min-width: 240px; max-width: 320px; }
+.col-status { width: 120px; }
+.col-source { width: 100px; }
+.col-attempts { width: 88px; }
+.col-next   { width: 160px; }
+.col-time   { width: 150px; }
+.col-id     { width: 80px; }
+.col-money  { width: 120px; }
+.col-mall   { width: 150px; }
+
+/* ---- Experiment section banner ---- */
+.exp-banner {
+  padding: 14px var(--space-6);
+  background: linear-gradient(90deg, var(--signal-pending-bg) 0%, rgba(36,26,43,0) 60%);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  position: relative;
+}
+.exp-banner::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--signal-pending);
+}
+.exp-banner svg { width: 16px; height: 16px; stroke: var(--signal-pending); fill: none; stroke-width: 1.5; flex-shrink: 0; }
+.exp-banner strong {
+  color: var(--signal-pending);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: var(--space-2);
+}
+.exp-banner a { margin-left: auto; font-size: var(--text-xs); color: var(--text-tertiary); font-family: var(--font-mono); }
+
+/* ---- Link cell ---- */
+.link-arrow {
+  color: var(--text-tertiary);
+  transition: color var(--transition-fast);
+}
+tr:hover .link-arrow { color: var(--amber-30); }
+
+/* ---- Best-result highlight ---- */
+.best-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--amber-30);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.best-mark::before {
+  content: '★';
+  font-size: 10px;
+}
+
+/* ---- Compare eligible marker ---- */
+.eligible-yes { color: var(--signal-success); }
+.eligible-no  { color: var(--signal-error); opacity: 0.8; }
+
+/* ---- Order/product cell composite ---- */
+.cell-order {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 100%;
+  min-width: 0;
+}
+.cell-order__name {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell-order__meta {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cell-order__meta-sep { opacity: 0.4; }
+
+/* ---- Price stack ---- */
+.cell-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.cell-price__main {
+  font-family: var(--font-mono);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.cell-price__unit {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+}
+
+/* ---- Mall cell ---- */
+.cell-mall {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.cell-mall__logo {
+  width: 18px; height: 18px;
+  border-radius: 3px;
+  background: var(--bg-raised);
+  display: grid; place-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  font-family: var(--font-mono);
+  border: 1px solid var(--border-subtle);
+}
+.cell-mall__logo--naver  { background: #03c75a; color: #fff; }
+.cell-mall__logo--coupang { background: #ed6a5a; color: #fff; }
+.cell-mall__name {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cell-mall__seller {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+}
+
+/* ---- Time cell ---- */
+.cell-time {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cell-time__main {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+.cell-time__rel {
+  font-size: var(--text-2xs);
+  color: var(--text-tertiary);
+}
+
+/* ---- Retry countdown ---- */
+.retry-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--signal-warn);
+}
+.retry-countdown svg {
+  width: 12px; height: 12px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+}
+
+/* ---- Trace flow graphic (notification page) ---- */
+.trace-flow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+.trace-flow__node {
+  padding: 3px 8px;
+  background: var(--bg-raised);
+  border-radius: 2px;
+  border: 1px solid var(--border-subtle);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.trace-flow__node--job    { border-left: 2px solid var(--signal-info); }
+.trace-flow__node--result { border-left: 2px solid var(--amber-30); }
+.trace-flow__node--outbox { border-left: 2px solid var(--signal-pending); }
+.trace-flow__node--delivery { border-left: 2px solid var(--signal-success); }
+.trace-flow__arrow { color: var(--text-tertiary); opacity: 0.5; }
+
+/* ---- Empty state ---- */
+.empty {
+  padding: var(--space-10);
+  text-align: center;
+  color: var(--text-tertiary);
+}
+.empty__title {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
