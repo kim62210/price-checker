@@ -2,20 +2,30 @@
 
 from __future__ import annotations
 
+import re
+from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ServiceError
+from app.core.exceptions import NotificationPolicyError, ServiceError
 from app.core.logging import get_logger
-from app.notifications.models import NotificationConsent, NotificationRecipient
+from app.notifications.models import (
+    NotificationConsent,
+    NotificationRecipient,
+    NotificationTemplate,
+    NotificationTemplateVersion,
+)
 from app.notifications.policy import normalize_phone_e164
 from app.notifications.schemas import (
     NotificationConsentGrant,
     NotificationRecipientCreate,
     NotificationRecipientUpdate,
+    NotificationTemplateCreate,
+    NotificationTemplateVersionCreate,
+    RenderedNotification,
 )
 from app.tenancy.models import Shop, User
 
@@ -38,6 +48,39 @@ class RecipientAlreadyExistsError(ServiceError):
     code = "CONFLICT"
     http_status = 409
     detail = "recipient_already_exists"
+
+
+class TemplateNotFoundError(ServiceError):
+    code = "NOT_FOUND"
+    http_status = 404
+    detail = "template_not_found"
+
+
+class TemplateAlreadyExistsError(ServiceError):
+    code = "CONFLICT"
+    http_status = 409
+    detail = "template_already_exists"
+
+
+class TemplateRenderError(ServiceError):
+    code = "TEMPLATE_RENDER_ERROR"
+    http_status = 400
+    detail = "template_render_error"
+
+
+_VARIABLE_PATTERN = re.compile(r"{{\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*}}")
+
+
+@dataclass(frozen=True)
+class _TemplateVariables:
+    required: tuple[str, ...]
+
+    @classmethod
+    def from_payload(cls, variables: list[str]) -> _TemplateVariables:
+        return cls(required=tuple(dict.fromkeys(variables)))
+
+    def as_json(self) -> dict[str, object]:
+        return {"required": list(self.required)}
 
 
 class NotificationRecipientService:
@@ -286,3 +329,132 @@ class NotificationConsentService:
         )
         result = await self._session.execute(stmt)
         return result.scalar_one_or_none()
+
+
+class NotificationTemplateService:
+    """템플릿 카탈로그와 불변 버전 관리 서비스."""
+
+    def __init__(self, session: AsyncSession) -> None:
+        self._session = session
+
+    async def create_template(
+        self,
+        *,
+        tenant_id: int,
+        payload: NotificationTemplateCreate,
+    ) -> NotificationTemplate:
+        template = NotificationTemplate(
+            tenant_id=tenant_id,
+            template_code=payload.template_code,
+            name=payload.name,
+        )
+        self._session.add(template)
+        try:
+            await self._session.flush()
+        except IntegrityError as exc:
+            await self._session.rollback()
+            raise TemplateAlreadyExistsError() from exc
+        await self._session.refresh(template)
+        logger.info("notification_template_created", tenant_id=tenant_id, template_id=template.id)
+        return template
+
+    async def create_version(
+        self,
+        *,
+        tenant_id: int,
+        template_id: int,
+        payload: NotificationTemplateVersionCreate,
+    ) -> NotificationTemplateVersion:
+        template = await self.get_template_or_404(tenant_id=tenant_id, template_id=template_id)
+        self._validate_channel_purpose(channel=payload.channel, purpose=payload.purpose)
+        version_number = await self._next_version(template_id=template.id)
+        version = NotificationTemplateVersion(
+            template_id=template.id,
+            tenant_id=tenant_id,
+            version=version_number,
+            channel=payload.channel,
+            purpose=payload.purpose,
+            provider_template_key=payload.provider_template_key,
+            review_status=payload.review_status,
+            locale=payload.locale,
+            title=payload.title,
+            body=payload.body,
+            fallback_body=payload.fallback_body,
+            variables=_TemplateVariables.from_payload(payload.variables).as_json(),
+        )
+        self._session.add(version)
+        await self._session.flush()
+        await self._session.refresh(version)
+        logger.info(
+            "notification_template_version_created",
+            tenant_id=tenant_id,
+            template_id=template.id,
+            version=version.version,
+        )
+        return version
+
+    async def get_template_or_404(
+        self,
+        *,
+        tenant_id: int,
+        template_id: int,
+    ) -> NotificationTemplate:
+        stmt = select(NotificationTemplate).where(
+            NotificationTemplate.id == template_id,
+            NotificationTemplate.tenant_id == tenant_id,
+        )
+        template = (await self._session.execute(stmt)).scalar_one_or_none()
+        if template is None:
+            raise TemplateNotFoundError()
+        return template
+
+    def render_version(
+        self,
+        version: NotificationTemplateVersion,
+        *,
+        variables: dict[str, object],
+    ) -> RenderedNotification:
+        required = self._required_variables(version)
+        missing = [name for name in required if name not in variables]
+        if missing:
+            raise TemplateRenderError(f"missing_template_variables:{','.join(missing)}")
+        return RenderedNotification(
+            title=self._render_text(version.title, variables) if version.title else None,
+            body=self._render_text(version.body, variables),
+            fallback_body=(
+                self._render_text(version.fallback_body, variables)
+                if version.fallback_body is not None
+                else None
+            ),
+            variables=variables,
+        )
+
+    async def _next_version(self, template_id: int) -> int:
+        stmt = select(func.max(NotificationTemplateVersion.version)).where(
+            NotificationTemplateVersion.template_id == template_id
+        )
+        current = (await self._session.execute(stmt)).scalar_one_or_none()
+        return int(current or 0) + 1
+
+    @staticmethod
+    def _validate_channel_purpose(*, channel: str, purpose: str) -> None:
+        if channel == "kakao_alimtalk" and purpose == "marketing":
+            raise NotificationPolicyError("marketing_alimtalk_not_allowed")
+
+    @staticmethod
+    def _required_variables(version: NotificationTemplateVersion) -> tuple[str, ...]:
+        raw = version.variables or {}
+        values = raw.get("required", [])
+        if not isinstance(values, list):
+            raise TemplateRenderError("invalid_template_variables")
+        return tuple(str(value) for value in values)
+
+    @staticmethod
+    def _render_text(text: str, variables: dict[str, object]) -> str:
+        def _replace(match: re.Match[str]) -> str:
+            name = match.group(1)
+            if name not in variables:
+                raise TemplateRenderError(f"missing_template_variables:{name}")
+            return str(variables[name])
+
+        return _VARIABLE_PATTERN.sub(_replace, text)
