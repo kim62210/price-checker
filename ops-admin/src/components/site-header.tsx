@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ConnectionBadge } from "@/components/connection-badge";
 import { LocaleToggle } from "@/components/locale-toggle";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { allNavItems } from "@/lib/nav";
@@ -71,6 +72,7 @@ export function SiteHeader() {
         </kbd>
       </div>
 
+      <ConnectionBadge />
       <LocaleToggle />
       <ThemeToggle />
     </header>
