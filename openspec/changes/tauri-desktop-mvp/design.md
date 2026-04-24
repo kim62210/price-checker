@@ -1,5 +1,7 @@
 ## Context
 
+> **Status**: Superseded as canonical user-facing product direction by `pivot-noti-first-procurement`. Keep this design only as internal parser QA/operator tooling reference.
+
 - 타겟 사용자: B2B 소매점 사장(편의점·무인매장·소형 슈퍼 등) 5-20명 규모의 pilot.
 - 소상공인 사장 층은 "프로그램 설치" 문화(택배앱, POS 관리, 재고앱)에 익숙해 설치 마찰이 낮다.
 - 기존 접근 대비 데스크톱 앱의 장점:

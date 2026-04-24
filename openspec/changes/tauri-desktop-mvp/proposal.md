@@ -1,5 +1,7 @@
 ## Why
 
+> **Status**: Superseded as canonical user-facing product direction by `pivot-noti-first-procurement`. This change remains as internal parser QA/operator tooling context only.
+
 B2B 소매점 사장을 타겟으로 한 "개당 실가 비교" MVP 는 Chrome Extension 이 아닌 **데스크톱 앱**으로 배포한다. 소상공인 사장 층은 "프로그램 설치" 문화(택배앱·재고앱·키오스크 관리 툴 등)에 이미 친숙하므로 설치 마찰이 낮고, 확장 프로그램 대비 **쿠팡 Akamai 봇 탐지 우회·세션 격리·오프라인 저장**이 구조적으로 유리하다. Electron 대비 번들 5-10MB·메모리 ~50MB(1/10) 수준인 **Tauri 2.0**을 택한다. 법적 근거는 "사장 본인 계정·본인 PC 에서 본인이 조회 · 장바구니 담기"로서 택배앱/발주앱의 구조와 동일하며, 서버 측 크롤링이 아니므로 이용약관 리스크가 낮다.
 
 ## What Changes
