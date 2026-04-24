@@ -31,11 +31,11 @@
 
 ## 5. Template Management
 
-- [ ] 5.1 Implement template catalog and immutable template version models in SQLAlchemy.
-- [ ] 5.2 Implement template creation and versioning service methods, preserving previous versions on body changes.
-- [ ] 5.3 Implement message purpose validation so marketing templates cannot use Alimtalk channel.
-- [ ] 5.4 Implement rendering with required variable validation and delivery-level rendered snapshot output.
-- [ ] 5.5 Add tests for approved Alimtalk template versions, version preservation, marketing Alimtalk rejection, and missing variable render failure.
+- [x] 5.1 Implement template catalog and immutable template version models in SQLAlchemy.
+- [x] 5.2 Implement template creation and versioning service methods, preserving previous versions on body changes.
+- [x] 5.3 Implement message purpose validation so marketing templates cannot use Alimtalk channel.
+- [x] 5.4 Implement rendering with required variable validation and delivery-level rendered snapshot output.
+- [x] 5.5 Add tests for approved Alimtalk template versions, version preservation, marketing Alimtalk rejection, and missing variable render failure.
 
 ## 6. Delivery Creation from Procurement Events
 
