@@ -71,6 +71,8 @@ make build-ui
 - `POST /api/v1/procurement/orders`, `GET /api/v1/procurement/orders`, `GET /api/v1/procurement/orders/{id}`
 - `POST /api/v1/procurement/orders/{id}/results` — 결과 업로드 (쿼터 소비)
 - `GET /api/v1/procurement/orders/{id}/results` — per_unit_price ASC
+- `POST /api/v1/procurement/orders/{id}/collect` — 네이버 공식 쇼핑 검색 기반 최저가 수집 job 생성 (멱등 키 지원)
+- `GET /api/v1/procurement/orders/{id}/collect/jobs` — 수집 job 목록 조회
 - `GET /api/v1/procurement/reports/summary?from=&to=` — 기간별 절감액 집계
 
 ### 검색 (Bearer JWT 필요)
@@ -84,6 +86,14 @@ make build-ui
 ## 필수 환경변수
 
 `.env.example` 참조. 최소 `DATABASE_URL`, `REDIS_URL`, `JWT_SECRET` 은 지정해야 기동한다. OAuth 로그인을 쓰려면 `KAKAO_CLIENT_ID`, `NAVER_OAUTH_CLIENT_ID` 등 OAuth 시크릿 값도 함께 설정한다.
+
+최저가 수집을 사용하려면 다음 값도 필요하다.
+
+- `NAVER_SEARCH_CLIENT_ID`
+- `NAVER_SEARCH_CLIENT_SECRET`
+- `NAVER_SEARCH_DISPLAY_LIMIT` (기본 20)
+- `PRICE_COLLECTION_MAX_ATTEMPTS` (기본 3)
+- `PRICE_COLLECTION_RETRY_BASE_SECONDS` (기본 60)
 
 ## 문서
 
