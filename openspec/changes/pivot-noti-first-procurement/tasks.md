@@ -1,10 +1,10 @@
 ## 1. Documentation and Product Direction Cleanup
 
-- [ ] 1.1 Update `README.md` to describe the Noti-first product direction and remove Tauri/React as the primary user-facing UI.
-- [ ] 1.2 Mark `IMPLEMENTATION_PLAN.md` as historical context superseded by `pivot-noti-first-procurement` for product direction.
-- [ ] 1.3 Update `openspec/changes/tauri-desktop-mvp/README.md` and related docs to classify Tauri assets as internal parser QA/operator tooling only.
-- [ ] 1.4 Update `openspec/changes/pivot-backend-multi-tenant/*` wording so Tauri/browser extension references are optional ingestion clients, not canonical product surfaces.
-- [ ] 1.5 Update `openspec/changes/toss-payments-billing/*` wording so billing recovery and payment failure communications are notification-first rather than UI-first.
+- [x] 1.1 Update `README.md` to describe the Noti-first product direction and remove Tauri/React as the primary user-facing UI.
+- [x] 1.2 Mark `IMPLEMENTATION_PLAN.md` as historical context superseded by `pivot-noti-first-procurement` for product direction.
+- [x] 1.3 Update `openspec/changes/tauri-desktop-mvp/README.md` and related docs to classify Tauri assets as internal parser QA/operator tooling only.
+- [x] 1.4 Update `openspec/changes/pivot-backend-multi-tenant/*` wording so Tauri/browser extension references are optional ingestion clients, not canonical product surfaces.
+- [x] 1.5 Update `openspec/changes/toss-payments-billing/*` wording so billing recovery and payment failure communications are notification-first rather than UI-first.
 
 ## 2. Notification Domain Scaffolding
 
