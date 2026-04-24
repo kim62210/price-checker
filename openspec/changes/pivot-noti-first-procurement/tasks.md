@@ -39,11 +39,11 @@
 
 ## 6. Delivery Creation from Procurement Events
 
-- [ ] 6.1 Add a notification event creation hook in `backend/app/procurement/service.py` when procurement results or completion states become notification-worthy.
-- [ ] 6.2 Implement delivery expansion from outbox event to recipient/channel/template-specific deliveries.
-- [ ] 6.3 Ensure procurement result payloads include successful lowest-price summaries and failure states such as `login_required`, `blocked`, `timeout`, and `parser_failed`.
-- [ ] 6.4 Add tests that completed procurement results create transactional Alimtalk deliveries without requiring Tauri/React UI state.
-- [ ] 6.5 Add tests that missing active recipients skip notification dispatch with an auditable reason.
+- [x] 6.1 Add a notification event creation hook in `backend/app/procurement/service.py` when procurement results or completion states become notification-worthy.
+- [x] 6.2 Implement delivery expansion from outbox event to recipient/channel/template-specific deliveries.
+- [x] 6.3 Ensure procurement result payloads include successful lowest-price summaries and failure states such as `login_required`, `blocked`, `timeout`, and `parser_failed`.
+- [x] 6.4 Add tests that completed procurement results create transactional Alimtalk deliveries without requiring Tauri/React UI state.
+- [x] 6.5 Add tests that missing active recipients skip notification dispatch with an auditable reason.
 
 ## 7. Dispatch, Providers, and Fallback
 
