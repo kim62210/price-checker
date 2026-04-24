@@ -1,5 +1,4 @@
 import {
-  Bell,
   BellRing,
   FlaskConical,
   LayoutDashboard,
@@ -9,67 +8,42 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+export type NavKey =
+  | "dashboard"
+  | "jobs"
+  | "results"
+  | "notifications"
+  | "experiments"
+  | "settings";
+
 export interface NavItem {
-  title: string;
+  key: NavKey;
   href: string;
   icon: LucideIcon;
-  description: string;
 }
 
-export interface NavGroup {
-  label: string;
+export interface NavGroupConfig {
+  labelKey: "operations" | "internal";
   items: NavItem[];
 }
 
-export const navGroups: NavGroup[] = [
+export const navGroups: NavGroupConfig[] = [
   {
-    label: "운영",
+    labelKey: "operations",
     items: [
-      {
-        title: "대시보드",
-        href: "/",
-        icon: LayoutDashboard,
-        description: "수집 · 절감 · 알림 현황 요약",
-      },
-      {
-        title: "조달 주문",
-        href: "/jobs",
-        icon: Package,
-        description: "조달 수집 job 상태와 재시도 현황",
-      },
-      {
-        title: "수집 결과",
-        href: "/results",
-        icon: Receipt,
-        description: "최저 실가 결과와 비교 가능 여부",
-      },
-      {
-        title: "알림",
-        href: "/notifications",
-        icon: BellRing,
-        description: "카카오 · SMS/LMS 전달 현황",
-      },
+      { key: "dashboard", href: "/", icon: LayoutDashboard },
+      { key: "jobs", href: "/jobs", icon: Package },
+      { key: "results", href: "/results", icon: Receipt },
+      { key: "notifications", href: "/notifications", icon: BellRing },
     ],
   },
   {
-    label: "내부",
+    labelKey: "internal",
     items: [
-      {
-        title: "파서 실험",
-        href: "/experiments",
-        icon: FlaskConical,
-        description: "파서 업로드 · 비교 · 회귀 테스트",
-      },
-      {
-        title: "설정",
-        href: "/settings",
-        icon: Settings,
-        description: "백엔드 URL · 토큰 · 환경",
-      },
+      { key: "experiments", href: "/experiments", icon: FlaskConical },
+      { key: "settings", href: "/settings", icon: Settings },
     ],
   },
 ];
 
 export const allNavItems: NavItem[] = navGroups.flatMap((group) => group.items);
-
-export { Bell };

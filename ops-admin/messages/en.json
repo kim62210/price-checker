@@ -1,0 +1,206 @@
+{
+  "app": {
+    "brand": "Ops Console",
+    "tagline": "Lowest Price · internal admin",
+    "environment": "STG",
+    "search": {
+      "placeholder": "Search orders · jobs · recipients",
+      "ariaLabel": "Search operational data",
+      "shortcut": "⌘K"
+    },
+    "profile": {
+      "name": "Ops operator",
+      "tenant": "Sample tenant"
+    },
+    "dataSource": {
+      "live": "Live",
+      "sample": "Sample"
+    }
+  },
+  "nav": {
+    "groups": {
+      "operations": "Operations",
+      "internal": "Internal"
+    },
+    "items": {
+      "dashboard": {
+        "title": "Dashboard",
+        "description": "Collection · savings · notification summary"
+      },
+      "jobs": {
+        "title": "Procurement Jobs",
+        "description": "Collection job state and retry backlog"
+      },
+      "results": {
+        "title": "Results",
+        "description": "Lowest-per-unit results and compare eligibility"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "description": "Kakao Alimtalk · SMS/LMS delivery status"
+      },
+      "experiments": {
+        "title": "Parser Experiments",
+        "description": "Parser uploads, cross-compare, regressions"
+      },
+      "settings": {
+        "title": "Settings",
+        "description": "Backend URL · token · environment"
+      }
+    }
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "locale": {
+    "toggle": "Change language",
+    "ko": "한국어",
+    "en": "English"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Collection, savings and notification indicators, plus recent events, at a glance.",
+    "kpi": {
+      "activeJobs": "Active collections",
+      "savings24h": "24h savings",
+      "alimtalkRate": "Alimtalk delivery rate",
+      "activeRecipients": "Active recipients",
+      "apiPending": "API connection pending"
+    },
+    "quickLinks": "Quick links",
+    "goTo": "Go"
+  },
+  "jobs": {
+    "title": "Procurement Jobs",
+    "description": "Consolidates collection job status, retries, and operator escalation points.",
+    "tabs": {
+      "all": "All",
+      "running": "Running",
+      "retry": "Retry scheduled",
+      "failed": "Failed",
+      "succeeded": "Succeeded"
+    },
+    "kpi": {
+      "running": "Running jobs",
+      "retry": "Retry scheduled",
+      "failures": "Permanent failures",
+      "successRate": "Success rate"
+    },
+    "table": {
+      "job": "Job",
+      "order": "Order · Product",
+      "status": "Status",
+      "source": "Source",
+      "attempts": "Attempts",
+      "queued": "Queued",
+      "finished": "Finished"
+    },
+    "actions": {
+      "triggerCollect": "Retry collection"
+    }
+  },
+  "results": {
+    "title": "Results",
+    "description": "Compare lowest landed per-unit prices alongside compare_eligible flags.",
+    "tabs": {
+      "all": "All",
+      "eligible": "Compare-eligible",
+      "rejected": "Rejected",
+      "best": "Best"
+    },
+    "kpi": {
+      "rows": "Rows",
+      "eligibleRatio": "Eligible ratio",
+      "avgSavings": "Avg. savings"
+    },
+    "table": {
+      "result": "Result",
+      "order": "Order · Product",
+      "mall": "Mall · Seller",
+      "source": "Source",
+      "perUnit": "Per-unit",
+      "listed": "Listed",
+      "collected": "Collected"
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Trace from outbox through delivery channels in one place.",
+    "tabs": {
+      "all": "All",
+      "inflight": "In-flight",
+      "delivered": "Delivered",
+      "fallback": "Fallback",
+      "failed": "Failed / DLQ"
+    },
+    "kpi": {
+      "deliveryRate": "Alimtalk delivery",
+      "fallback": "SMS/LMS fallback",
+      "deadLetter": "Dead-lettered",
+      "activeRecipients": "Active recipients"
+    },
+    "table": {
+      "delivery": "Delivery",
+      "channel": "Channel",
+      "template": "Template",
+      "recipient": "Recipient",
+      "status": "Status",
+      "sent": "Sent"
+    }
+  },
+  "experiments": {
+    "title": "Parser Experiments",
+    "description": "Parser uploads and experimental data stay isolated from production pipelines.",
+    "tabs": {
+      "uploads": "Uploads",
+      "parseRuns": "Parse runs",
+      "compare": "Cross-compare",
+      "regressions": "Regressions"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage backend URL, Bearer token, and user preferences.",
+    "api": {
+      "title": "Backend connection",
+      "backendUrl": "Backend URL",
+      "accessToken": "Bearer token",
+      "saved": "Settings saved",
+      "cleared": "Stored settings cleared",
+      "connect": "Test connection",
+      "save": "Save",
+      "reset": "Reset"
+    },
+    "preferences": {
+      "title": "User preferences",
+      "theme": "Theme",
+      "locale": "Language"
+    }
+  },
+  "auth": {
+    "title": "Console access",
+    "description": "Enter backend URL and Bearer token to switch to live data.",
+    "fallback": "Until connected, only the sample data layout is available.",
+    "errors": {
+      "invalidToken": "Invalid token",
+      "unreachable": "Backend is unreachable"
+    }
+  },
+  "common": {
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "retry": "Retry",
+    "loading": "Loading",
+    "empty": "No data to display",
+    "error": "Error",
+    "details": "Details",
+    "backToHome": "Back home",
+    "noData": "—",
+    "more": "More"
+  }
+}

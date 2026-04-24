@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { ShieldCheck } from "lucide-react";
 
 import {
@@ -26,6 +27,8 @@ function isActiveHref(pathname: string, href: string): boolean {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const app = useTranslations("app");
+  const nav = useTranslations("nav");
 
   return (
     <Sidebar collapsible="icon" variant="inset">
@@ -42,9 +45,9 @@ export function AppSidebar() {
                   <ShieldCheck className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Ops Console</span>
+                  <span className="truncate font-semibold">{app("brand")}</span>
                   <span className="truncate text-xs text-muted-foreground">
-                    Lowest Price · internal
+                    {app("tagline")}
                   </span>
                 </div>
               </Link>
@@ -55,23 +58,20 @@ export function AppSidebar() {
 
       <SidebarContent>
         {navGroups.map((group) => (
-          <SidebarGroup key={group.label}>
-            <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+          <SidebarGroup key={group.labelKey}>
+            <SidebarGroupLabel>{nav(`groups.${group.labelKey}`)}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
                   const active = isActiveHref(pathname, item.href);
                   const Icon = item.icon;
+                  const title = nav(`items.${item.key}.title`);
                   return (
                     <SidebarMenuItem key={item.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        tooltip={item.title}
-                      >
+                      <SidebarMenuButton asChild isActive={active} tooltip={title}>
                         <Link href={item.href}>
                           <Icon />
-                          <span>{item.title}</span>
+                          <span>{title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
@@ -89,11 +89,11 @@ export function AppSidebar() {
             HK
           </div>
           <div className="min-w-0 flex-1">
-            <div className="truncate font-medium">Ops 운영자</div>
-            <div className="truncate text-muted-foreground">샘플 테넌트</div>
+            <div className="truncate font-medium">{app("profile.name")}</div>
+            <div className="truncate text-muted-foreground">{app("profile.tenant")}</div>
           </div>
           <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
-            STG
+            {app("environment")}
           </span>
         </div>
       </SidebarFooter>

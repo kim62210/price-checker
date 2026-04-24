@@ -1,0 +1,206 @@
+{
+  "app": {
+    "brand": "Ops Console",
+    "tagline": "Lowest Price · 내부 운영 콘솔",
+    "environment": "STG",
+    "search": {
+      "placeholder": "주문·작업·수신자 검색",
+      "ariaLabel": "운영 데이터 검색",
+      "shortcut": "⌘K"
+    },
+    "profile": {
+      "name": "Ops 운영자",
+      "tenant": "샘플 테넌트"
+    },
+    "dataSource": {
+      "live": "실데이터",
+      "sample": "샘플 데이터"
+    }
+  },
+  "nav": {
+    "groups": {
+      "operations": "운영",
+      "internal": "내부"
+    },
+    "items": {
+      "dashboard": {
+        "title": "대시보드",
+        "description": "수집·절감·알림 현황 요약"
+      },
+      "jobs": {
+        "title": "조달 주문",
+        "description": "조달 수집 job 상태와 재시도 현황"
+      },
+      "results": {
+        "title": "수집 결과",
+        "description": "최저 실가 결과와 비교 가능 여부"
+      },
+      "notifications": {
+        "title": "알림",
+        "description": "카카오·SMS/LMS 전달 현황"
+      },
+      "experiments": {
+        "title": "파서 실험",
+        "description": "파서 업로드·비교·회귀 테스트"
+      },
+      "settings": {
+        "title": "설정",
+        "description": "백엔드 URL·토큰·환경"
+      }
+    }
+  },
+  "theme": {
+    "toggle": "테마 전환",
+    "light": "라이트",
+    "dark": "다크",
+    "system": "시스템"
+  },
+  "locale": {
+    "toggle": "언어 전환",
+    "ko": "한국어",
+    "en": "English"
+  },
+  "dashboard": {
+    "title": "대시보드",
+    "description": "수집·절감·알림 지표와 최근 이벤트를 한 화면에 모아 확인합니다.",
+    "kpi": {
+      "activeJobs": "실행 중 수집",
+      "savings24h": "24h 절감액",
+      "alimtalkRate": "알림톡 전달률",
+      "activeRecipients": "활성 수신자",
+      "apiPending": "API 연결 대기"
+    },
+    "quickLinks": "빠른 이동",
+    "goTo": "바로가기"
+  },
+  "jobs": {
+    "title": "조달 주문",
+    "description": "수집 작업 상태, 재시도, 운영 개입 포인트를 한 화면에서 정리합니다.",
+    "tabs": {
+      "all": "전체",
+      "running": "실행 중",
+      "retry": "재시도 예정",
+      "failed": "실패",
+      "succeeded": "성공"
+    },
+    "kpi": {
+      "running": "실행 중 작업",
+      "retry": "재시도 예정",
+      "failures": "영구 실패",
+      "successRate": "성공률"
+    },
+    "table": {
+      "job": "Job",
+      "order": "주문·상품",
+      "status": "상태",
+      "source": "소스",
+      "attempts": "시도",
+      "queued": "대기 시작",
+      "finished": "완료"
+    },
+    "actions": {
+      "triggerCollect": "수집 재시도"
+    }
+  },
+  "results": {
+    "title": "수집 결과",
+    "description": "최저 실가 결과를 compare_eligible 기준과 함께 비교합니다.",
+    "tabs": {
+      "all": "전체",
+      "eligible": "비교 가능",
+      "rejected": "제외",
+      "best": "최저가"
+    },
+    "kpi": {
+      "rows": "결과 건수",
+      "eligibleRatio": "비교 가능 비율",
+      "avgSavings": "평균 절감액"
+    },
+    "table": {
+      "result": "Result",
+      "order": "주문·상품",
+      "mall": "몰·셀러",
+      "source": "소스",
+      "perUnit": "개당가",
+      "listed": "표시가",
+      "collected": "수집 시각"
+    }
+  },
+  "notifications": {
+    "title": "알림",
+    "description": "outbox부터 전달 채널까지 한 번에 추적합니다.",
+    "tabs": {
+      "all": "전체",
+      "inflight": "진행 중",
+      "delivered": "전달 완료",
+      "fallback": "Fallback",
+      "failed": "실패"
+    },
+    "kpi": {
+      "deliveryRate": "알림톡 전달률",
+      "fallback": "SMS/LMS fallback",
+      "deadLetter": "Dead-lettered",
+      "activeRecipients": "활성 수신자"
+    },
+    "table": {
+      "delivery": "Delivery",
+      "channel": "채널",
+      "template": "템플릿",
+      "recipient": "수신자",
+      "status": "상태",
+      "sent": "발송 시각"
+    }
+  },
+  "experiments": {
+    "title": "파서 실험",
+    "description": "실험용 파서와 업로드 데이터는 운영 파이프라인과 분리해 추적합니다.",
+    "tabs": {
+      "uploads": "업로드",
+      "parseRuns": "파싱 실행",
+      "compare": "교차 비교",
+      "regressions": "회귀"
+    }
+  },
+  "settings": {
+    "title": "설정",
+    "description": "백엔드 URL, Bearer 토큰, 테마·언어 기본값을 관리합니다.",
+    "api": {
+      "title": "백엔드 연결",
+      "backendUrl": "백엔드 URL",
+      "accessToken": "Bearer 토큰",
+      "saved": "설정이 저장되었습니다",
+      "cleared": "저장된 설정을 제거했습니다",
+      "connect": "연결 테스트",
+      "save": "설정 저장",
+      "reset": "초기화"
+    },
+    "preferences": {
+      "title": "사용자 환경",
+      "theme": "테마",
+      "locale": "언어"
+    }
+  },
+  "auth": {
+    "title": "운영 콘솔 접근",
+    "description": "백엔드 URL과 Bearer 토큰을 입력해 실데이터 모드로 전환하세요.",
+    "fallback": "연결 전에는 샘플 데이터로 화면 구조만 확인합니다.",
+    "errors": {
+      "invalidToken": "토큰이 유효하지 않습니다",
+      "unreachable": "백엔드에 연결할 수 없습니다"
+    }
+  },
+  "common": {
+    "close": "닫기",
+    "save": "저장",
+    "cancel": "취소",
+    "apply": "적용",
+    "retry": "재시도",
+    "loading": "로딩 중",
+    "empty": "표시할 데이터가 없습니다",
+    "error": "오류",
+    "details": "상세",
+    "backToHome": "홈으로",
+    "noData": "—",
+    "more": "더보기"
+  }
+}
