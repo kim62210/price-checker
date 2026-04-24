@@ -8,19 +8,19 @@
 
 ## 2. Notification Domain Scaffolding
 
-- [ ] 2.1 Create `backend/app/notifications/` with `__init__.py`, `models.py`, `schemas.py`, `service.py`, `router.py`, `providers.py`, `dispatcher.py`, and `policy.py`.
-- [ ] 2.2 Register the notifications router in `backend/app/api/v1/router.py` with tenant-authenticated endpoints.
-- [ ] 2.3 Extend `backend/app/core/config.py` with Kakao BizMessage, SMS provider, webhook secret, sender profile, retry, and notification quota settings.
-- [ ] 2.4 Add typed notification error classes or error codes using the existing `backend/app/core/exceptions.py` pattern.
+- [x] 2.1 Create `backend/app/notifications/` with `__init__.py`, `models.py`, `schemas.py`, `service.py`, `router.py`, `providers.py`, `dispatcher.py`, and `policy.py`.
+- [x] 2.2 Register the notifications router in `backend/app/api/v1/router.py` with tenant-authenticated endpoints.
+- [x] 2.3 Extend `backend/app/core/config.py` with Kakao BizMessage, SMS provider, webhook secret, sender profile, retry, and notification quota settings.
+- [x] 2.4 Add typed notification error classes or error codes using the existing `backend/app/core/exceptions.py` pattern.
 
 ## 3. Persistence and Migrations
 
-- [ ] 3.1 Add Alembic migration for `notification_recipients` with tenant_id, normalized phone, optional shop/user references, active status, and audit timestamps.
-- [ ] 3.2 Add Alembic migration for channel consent records covering transactional Kakao eligibility, Kakao marketing consent, SMS advertising consent, nighttime advertising consent, evidence metadata, granted_at, and revoked_at.
-- [ ] 3.3 Add Alembic migration for `notification_templates` and `notification_template_versions` with channel, purpose, provider template key, review status, locale, variables, body, fallback body, and effective timestamps.
-- [ ] 3.4 Add Alembic migration for `notification_outbox_events` with event_type, aggregate reference, payload, status, attempts, next_retry_at, and idempotency_key.
-- [ ] 3.5 Add Alembic migration for `notification_deliveries`, `notification_delivery_attempts`, `provider_callbacks`, and `notification_dead_letters`.
-- [ ] 3.6 Add tenant-aware indexes and unique constraints for idempotency, provider_message_id lookup, pending dispatch polling, and cross-tenant isolation.
+- [x] 3.1 Add Alembic migration for `notification_recipients` with tenant_id, normalized phone, optional shop/user references, active status, and audit timestamps.
+- [x] 3.2 Add Alembic migration for channel consent records covering transactional Kakao eligibility, Kakao marketing consent, SMS advertising consent, nighttime advertising consent, evidence metadata, granted_at, and revoked_at.
+- [x] 3.3 Add Alembic migration for `notification_templates` and `notification_template_versions` with channel, purpose, provider template key, review status, locale, variables, body, fallback body, and effective timestamps.
+- [x] 3.4 Add Alembic migration for `notification_outbox_events` with event_type, aggregate reference, payload, status, attempts, next_retry_at, and idempotency_key.
+- [x] 3.5 Add Alembic migration for `notification_deliveries`, `notification_delivery_attempts`, `provider_callbacks`, and `notification_dead_letters`.
+- [x] 3.6 Add tenant-aware indexes and unique constraints for idempotency, provider_message_id lookup, pending dispatch polling, and cross-tenant isolation.
 
 ## 4. Recipient and Consent APIs
 
