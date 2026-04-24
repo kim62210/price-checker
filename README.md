@@ -39,17 +39,28 @@ make dev-api         # 로컬 uvicorn 만
 
 ## 운영 백오피스: Ops Admin Web
 
-`ops-admin/` 은 React + TypeScript + Vite 기반의 독립 웹 백오피스다. 조달 수집 작업, 수집 결과, Noti-first 알림 추적, 내부 파서 실험 데이터를 운영자가 확인하는 용도로 사용한다.
+`ops-admin/` 은 **Next.js 16 LTS(App Router · React 19 · Turbopack) + Tailwind v4 + shadcn/ui + TanStack Query + next-intl** 기반의 독립 웹 백오피스다. 조달 수집 주문, 최저 실가 결과, 카카오/SMS 알림 수신자 현황, 내부 파서 실험 데이터를 운영자가 확인하는 용도로 사용한다.
 
 ```bash
 make install-ui
-make dev-ui          # http://127.0.0.1:5174
+make dev-ui          # http://127.0.0.1:5175
 make typecheck-ui
-make test-ui
+make test-ui         # Vitest + RTL (13 tests)
+make test-ui-e2e     # Playwright smoke (6 tests)
 make build-ui
 ```
 
-API 연결 전에는 안전한 샘플 데이터로 화면 구조를 확인할 수 있고, 운영 백엔드 URL과 Bearer 토큰을 입력하면 `/api/v1/procurement` 및 `/api/v1/notifications` 계열 API를 통해 실데이터를 동기화한다. 사용자-facing 결과 전달은 여전히 `pivot-noti-first-procurement`의 notification workflow가 담당한다.
+`/settings` 페이지에서 백엔드 URL과 Bearer 토큰을 입력하면 TanStack Query 훅이 실데이터 모드로 즉시 전환한다. 토큰 미설정 상태에서는 각 페이지가 NotConnectedState 로 설정 페이지 이동을 안내하며, 대시보드/주문/결과/알림/실험/설정 라우트가 준비되어 있다. 사용자-facing 결과 전달은 여전히 `pivot-noti-first-procurement`의 notification workflow가 담당한다.
+
+주요 기술 스택:
+
+- Next.js 16.2 (App Router, Server Components, Turbopack dev)
+- React 19 · TypeScript 5 strict(noUncheckedIndexedAccess) · ESLint(next/core-web-vitals) · Prettier
+- Tailwind CSS v4 (CSS-first `@theme` · OKLCH 팔레트) · shadcn/ui new-york · lucide-react
+- TanStack Query v5(+devtools), Zod v4 스키마 검증, sonner 토스트
+- next-intl 4 (cookie 기반 ko/en 전환, server action), next-themes (시스템/라이트/다크)
+- Recharts 3 (대시보드 차트), date-fns 4
+- Vitest 3 + @testing-library, Playwright 1.59 E2E
 
 ## 주요 엔드포인트
 

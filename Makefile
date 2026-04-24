@@ -1,4 +1,4 @@
-.PHONY: help install install-ui dev dev-ui dev-api test test-ui lint format typecheck typecheck-ui build-ui migrate revision up down logs clean
+.PHONY: help install install-ui dev dev-ui dev-api test test-ui test-ui-e2e lint format typecheck typecheck-ui build-ui migrate revision up down logs clean
 
 BACKEND_DIR := backend
 FRONTEND_DIR := ops-admin
@@ -12,7 +12,8 @@ help:
 	@echo "  dev-ui             - Ops Admin 웹 Next.js 개발 서버 기동 (127.0.0.1:5175)"
 	@echo "  dev-api            - 로컬 uvicorn 기동"
 	@echo "  test               - pytest + 커버리지"
-	@echo "  test-ui            - UI unit tests (vitest)"
+	@echo "  test-ui            - UI unit tests (vitest + RTL)"
+	@echo "  test-ui-e2e        - UI E2E smoke tests (Playwright + dev 서버 자동 기동)"
 	@echo "  lint               - ruff check"
 	@echo "  format             - ruff format"
 	@echo "  typecheck          - mypy"
@@ -45,6 +46,9 @@ test:
 
 test-ui:
 	cd $(FRONTEND_DIR) && pnpm test
+
+test-ui-e2e:
+	cd $(FRONTEND_DIR) && pnpm test:e2e
 
 lint:
 	cd $(BACKEND_DIR) && ruff check app tests
@@ -81,4 +85,4 @@ clean:
 	find . -type d -name .pytest_cache -exec rm -rf {} + 2>/dev/null || true
 	find . -type d -name .ruff_cache -exec rm -rf {} + 2>/dev/null || true
 	rm -rf $(BACKEND_DIR)/htmlcov $(BACKEND_DIR)/.coverage
-	rm -rf $(FRONTEND_DIR)/dist $(FRONTEND_DIR)/coverage
+	rm -rf $(FRONTEND_DIR)/.next $(FRONTEND_DIR)/coverage $(FRONTEND_DIR)/playwright-report $(FRONTEND_DIR)/test-results
