@@ -2,7 +2,7 @@
 
 - 기존 백엔드는 단일 사용자 전제(`friend_mode = true`)로 설계되어 있어, 모든 테이블에 `tenant_id` 개념이 없고, API 엔드포인트는 인증 미들웨어 없이 열려 있다.
 - 피벗 후에는 **테넌트(소매점 운영자) → 소매점(shops) → 사용자(users)** 3계층 소유 구조가 필요하며, 모든 데이터 접근이 `tenant_id` 로 격리되어야 한다.
-- 크롤링은 **클라이언트(브라우저 확장·Tauri 앱)가 수행**하므로 백엔드에는 `collectors/` 폐기. 백엔드는 클라이언트가 업로드한 DOM 파싱 결과를 받아 정규화·저장·랭킹·리포트만 담당한다.
+- 크롤링은 백엔드가 수행하지 않는다. 인증된 ingestion client 또는 내부 운영 도구가 업로드한 파싱 결과를 받아 정규화·저장·랭킹·리포트만 담당한다. 브라우저 확장·Tauri 앱은 optional/internal client일 뿐 canonical product surface가 아니다.
 - 인증은 한국 B2B 시장을 타겟하므로 카카오·네이버 OAuth 2.0 우선. 자체 이메일/패스워드는 예비(`auth_provider = 'local'`)로만 스키마에 존재.
 
 ## Goals / Non-Goals
@@ -17,7 +17,7 @@
 - 구독 결제·인보이스·쿠폰: 영역 D 제안. 본 영역은 `tenants.plan` 컬럼과 `api_quota_monthly` 필드만 준비.
 - 관리자 대시보드·관측성 강화: 영역 E 제안.
 - 스키마당 격리(schema-per-tenant), DB당 격리(database-per-tenant): 초기에는 row-level 로 충분. 대형 테넌트가 붙으면 재평가.
-- 브라우저 확장·Tauri 앱 구현: 영역 B·C 제안.
+- 브라우저 확장·Tauri 앱 구현: `pivot-noti-first-procurement` 이후 사용자-facing 범위에서 제외하며, 필요 시 optional/internal ingestion tooling으로만 검토한다.
 - 자체 이메일/패스워드 로그인 UI: 스키마에만 `auth_provider = 'local'` 자리 예약. 실제 라우트는 추가하지 않는다.
 
 ## Decisions

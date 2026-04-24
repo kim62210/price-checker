@@ -13,7 +13,9 @@ from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
+    JSON,
     BigInteger,
+    Boolean,
     DateTime,
     ForeignKey,
     Index,
@@ -23,14 +25,17 @@ from sqlalchemy import (
     Text,
     func,
 )
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
 
-_bigint = BigInteger().with_variant(Integer(), "sqlite")
-
 if TYPE_CHECKING:  # 순환 import 방지용 타입 힌트
+    from app.price_collection.models import PriceCollectionJob
     from app.tenancy.models import Shop, Tenant
+
+_bigint = BigInteger().with_variant(Integer(), "sqlite")
+_json = JSONB().with_variant(JSON(), "sqlite")
 
 
 ORDER_STATUS_VALUES = ("draft", "collecting", "completed", "cancelled")
@@ -84,9 +89,9 @@ class ProcurementOrder(Base, TimestampMixin):
         server_default="draft",
     )
 
-    tenant: Mapped["Tenant"] = relationship("Tenant", lazy="raise")
-    shop: Mapped["Shop"] = relationship("Shop", lazy="raise")
-    results: Mapped[list["ProcurementResult"]] = relationship(
+    tenant: Mapped[Tenant] = relationship("Tenant", lazy="raise")
+    shop: Mapped[Shop] = relationship("Shop", lazy="raise")
+    results: Mapped[list[ProcurementResult]] = relationship(
         "ProcurementResult",
         back_populates="order",
         cascade="all, delete-orphan",
@@ -117,6 +122,11 @@ class ProcurementResult(Base):
         ForeignKey("procurement_orders.id", ondelete="CASCADE"),
         nullable=False,
     )
+    job_id: Mapped[int | None] = mapped_column(
+        _bigint,
+        ForeignKey("price_collection_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     tenant_id: Mapped[int] = mapped_column(
         _bigint,
         ForeignKey("tenants.id", ondelete="CASCADE"),
@@ -134,6 +144,16 @@ class ProcurementResult(Base):
         server_default="0",
     )
     unit_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    source_method: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    external_offer_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    compare_eligible: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=True,
+        server_default="1",
+    )
+    parser_version: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    raw_excerpt: Mapped[dict[str, object] | None] = mapped_column(_json, nullable=True)
     collected_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -145,7 +165,12 @@ class ProcurementResult(Base):
         nullable=False,
     )
 
-    order: Mapped["ProcurementOrder"] = relationship(
+    order: Mapped[ProcurementOrder] = relationship(
         "ProcurementOrder", back_populates="results"
     )
-    tenant: Mapped["Tenant"] = relationship("Tenant", lazy="raise")
+    collection_job: Mapped[PriceCollectionJob | None] = relationship(
+        "PriceCollectionJob",
+        back_populates="results",
+        lazy="raise",
+    )
+    tenant: Mapped[Tenant] = relationship("Tenant", lazy="raise")

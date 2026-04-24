@@ -151,7 +151,6 @@ async def test_user_provider_unique_constraint(db_session: AsyncSession, test_te
 async def test_user_list_in_tenant(db_session: AsyncSession, test_tenant_a, test_tenant_b):
     """테넌트 A 유저 목록에 테넌트 B 유저는 미포함."""
     from app.tenancy.models import User
-    from sqlalchemy import select
 
     u_a = User(
         tenant_id=test_tenant_a.id, email="a@ex.com",

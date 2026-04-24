@@ -2,6 +2,7 @@
 
 > 조사일: 2026-04-22
 > 기준 디렉토리: `/Users/adminstrator/Desktop/hyungjoo-drb/personal/lowest-price`
+> 상태: **역사 문서**. 현재 제품 방향은 `openspec/changes/pivot-noti-first-procurement/`가 supersede한다. 이 문서는 초기 API-first 검색 서비스 조사와 제약 기록으로만 참고한다.
 
 ---
 

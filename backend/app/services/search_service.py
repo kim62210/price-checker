@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 from decimal import Decimal
+from typing import cast
 
 from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,6 +69,7 @@ async def _load_matches(
         .where(
             ProcurementResult.tenant_id == tenant_id,
             ProcurementOrder.tenant_id == tenant_id,
+            ProcurementResult.compare_eligible.is_(True),
             or_(
                 ProcurementOrder.product_name.ilike(needle, escape="\\"),
                 ProcurementOrder.option_text.ilike(needle, escape="\\"),
@@ -89,7 +91,7 @@ def _to_item(result: ProcurementResult, order: ProcurementOrder) -> SearchResult
     return SearchResultItem(
         result_id=result.id,
         order_id=order.id,
-        source=result.source,  # type: ignore[arg-type]
+        source=cast(Platform, result.source),
         product_url=result.product_url,
         seller_name=result.seller_name,
         listed_price=Decimal(result.listed_price),

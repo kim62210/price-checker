@@ -6,7 +6,6 @@ import pytest
 import respx
 from httpx import Response
 
-
 NAVER_TOKEN_URL = "https://nid.naver.com/oauth2.0/token"
 NAVER_USERINFO_URL = "https://openapi.naver.com/v1/nid/me"
 

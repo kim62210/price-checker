@@ -9,7 +9,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -210,5 +210,5 @@ class UserService:
         user = await self.get_user(user_id)
         if user is None:
             raise UserNotFoundError()
-        user.last_login_at = datetime.now(tz=timezone.utc)
+        user.last_login_at = datetime.now(tz=UTC)
         await self._session.flush()

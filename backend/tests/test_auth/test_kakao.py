@@ -6,7 +6,6 @@ import pytest
 import respx
 from httpx import Response
 
-
 KAKAO_TOKEN_URL = "https://kauth.kakao.com/oauth/token"
 KAKAO_USERINFO_URL = "https://kapi.kakao.com/v2/user/me"
 

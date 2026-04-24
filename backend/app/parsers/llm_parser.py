@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from app.core.config import Settings, get_settings
@@ -28,11 +28,11 @@ _MONTH_KEY_FMT = "llm:tokens:%Y%m"
 
 
 def _current_month_key() -> str:
-    return datetime.now(timezone.utc).strftime(_MONTH_KEY_FMT)
+    return datetime.now(UTC).strftime(_MONTH_KEY_FMT)
 
 
 def _month_expireat() -> int:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     first_next = (now.replace(day=1) + timedelta(days=32)).replace(
         day=1, hour=0, minute=0, second=0, microsecond=0
     )
@@ -53,6 +53,8 @@ def _coerce_result(raw: dict[str, Any], source_text: str, model_label: str) -> P
     unit = raw.get("unit")
     unit_qty = raw.get("unit_quantity")
     if unit not in ("g", "ml", "ct", "sheet") or unit_qty in (None, 0, 0.0):
+        return None
+    if not isinstance(unit_qty, str | int | float):
         return None
     try:
         qty_float = float(unit_qty)

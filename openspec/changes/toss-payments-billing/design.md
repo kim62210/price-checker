@@ -9,7 +9,7 @@
 - 법적/컴플라이언스 맥락:
   - PCI DSS SAQ-A: 카드번호가 우리 서버를 통과하지 않으면(위젯이 토스 도메인으로 직접 전송) 가장 낮은 수준의 자가평가만 필요.
   - 개인정보보호법: 이메일·사업자번호 등은 `pivot-backend-multi-tenant`의 암호화 정책에 위임.
-  - 전자상거래법: 정기결제 해지 창구 명시 필요 → `POST /api/v1/billing/cancel` + UI "구독 해지" 버튼.
+- 전자상거래법: 정기결제 해지 창구 명시 필요 → `POST /api/v1/billing/cancel` + Noti-first 결제/해지 안내 메시지. 사용자-facing UI가 없는 MVP에서는 운영자 또는 얇은 복구 링크로 보완한다.
 - 운영 환경: FastAPI + Postgres 16 + Redis 7 + Arq 워커. 기존 `pivot-backend-multi-tenant`에서 구축된 멀티테넌트 스키마(`tenants`) 위에 구축.
 
 ## Goals / Non-Goals
@@ -101,7 +101,7 @@ PLANS = {
 
 ### 4. 결제 플로우 (시퀀스 다이어그램)
 ```
-사장(Tauri/Web)             백엔드                     토스페이먼츠
+사장(결제/복구 링크)          백엔드                     토스페이먼츠
   │                          │                            │
   │ 1. 플랜 선택              │                            │
   ├─────────────────────────▶│                            │
@@ -166,8 +166,8 @@ PLANS = {
 
     (언제든) cancel 요청 → cancelled_at 기록, cycle 종료까지 active 유지 → cycle 종료 시 cancelled
 ```
-- `past_due`: 재시도 중. 앱 접근은 유지(경고 배너만 표시).
-- `suspended`: 3회 재시도 모두 실패. 결제 복구 UI 외 모든 경로 차단.
+- `past_due`: 재시도 중. 신규 조달/알림 dispatch는 유지하되 결제 재시도 안내를 notification channel로 발송.
+- `suspended`: 3회 재시도 모두 실패. 신규 조달/알림 dispatch를 차단하고 결제 복구 안내만 notification channel로 발송.
 - `cancelled`: 최종 해지. 재가입은 신규 `subscriptions` row.
 
 ### 7. 결제 실패 재시도 전략
@@ -208,7 +208,7 @@ PLANS = {
 
 - [토스페이먼츠 API 장애로 자동결제 실패 급증] → 결제 실패는 항상 `billing_retries` 큐로 수렴, 3회 재시도 후에만 suspended. 장애 시에는 수동 복구 스크립트(`scripts/retry_all_pending.py`) 준비.
 - [Webhook이 누락되거나 순서가 뒤바뀐다] → 빌링 API 동기 응답(`POST /v1/billing/{billingKey}`)에서 이미 성공/실패를 받으므로 Webhook은 보조 확인용. 주 소스는 동기 응답, Webhook은 멱등 이중 기록.
-- [카드 한도 초과·분실 신고로 연쇄 실패] → 3일 간격 3회 재시도 중 고객에게 이메일/인앱 알림(결제 정보 업데이트 유도). `suspended` 전환 직전 1회 더 유예 안내.
+- [카드 한도 초과·분실 신고로 연쇄 실패] → 3일 간격 3회 재시도 중 고객에게 알림톡/SMS fallback으로 결제 정보 업데이트를 안내. `suspended` 전환 직전 1회 더 유예 안내.
 - [플랜 한도(발주 50건/월) 초과 사장의 이탈] → Business 플랜 업그레이드 CTA를 `orders_per_month` 소진 시점에 노출. 한도 초과 시 신규 발주만 차단(기존 기능 유지).
 - [Franchise 플랜 도입 시 다중 가맹점 빌링 구조 변경] → 현재 `subscriptions`는 tenant 1:1 매핑. Franchise는 `franchise_memberships` 테이블로 확장 필요(Post-MVP 별도 change).
 - [토스 수수료 인상·PG 교체 필요성] → `toss_client.py`를 얇게 유지, `PaymentGateway` 프로토콜(Protocol)로 추상화해 교체 가능 구조. 단 v1은 토스 단일 구현만 제공.
@@ -225,7 +225,7 @@ PLANS = {
 2. `.env` 파일에 `TOSS_SECRET_KEY`, `TOSS_CLIENT_KEY`, `TOSS_WEBHOOK_SECRET` 추가.
 3. Alembic 마이그레이션 실행: `subscriptions`, `payment_events`, `billing_retries` 3개 테이블 생성.
 4. Arq 워커 재시작 → 새 크론 태스크 등록.
-5. Streamlit/Tauri 클라이언트에서 `/api/v1/billing/register` 연동.
+5. 결제 등록/복구 링크 또는 운영자 도구에서 `/api/v1/billing/register` 연동.
 6. 토스 테스트 카드로 첫 결제/재시도/해지/Webhook 수신 end-to-end 검증.
 7. 운영 키 전환 체크리스트(아래 tasks.md #13) 수행 후 프로덕션 배포.
 

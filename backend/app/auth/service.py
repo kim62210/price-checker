@@ -76,7 +76,7 @@ class AuthService:
         self,
         session: AsyncSession,
         redis: Redis,
-        settings=None,
+        settings: Settings | None = None,
     ) -> None:
         self._session = session
         self._redis = redis

@@ -4,8 +4,6 @@ from __future__ import annotations
 
 import os
 from collections.abc import AsyncIterator
-from datetime import UTC, datetime, timedelta
-from typing import Any
 
 import fakeredis.aioredis
 import pytest
@@ -15,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
 os.environ.setdefault("ENVIRONMENT", "local")
-os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-tests-only")
+os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-tests-only-32-bytes")
 os.environ.setdefault("KAKAO_CLIENT_ID", "test-kakao-id")
 os.environ.setdefault("KAKAO_CLIENT_SECRET", "test-kakao-secret")
 os.environ.setdefault("NAVER_OAUTH_CLIENT_ID", "test-naver-id")
@@ -44,12 +42,14 @@ def anyio_backend():
 @pytest.fixture
 async def db_engine():
     """SQLite in-memory 비동기 엔진 — 각 테스트마다 새 스키마."""
-    from app.models.base import Base  # noqa: PLC0415
+    import app.auth.models  # noqa: F401, PLC0415
+    import app.notifications.models  # noqa: F401, PLC0415
+    import app.price_collection.models  # noqa: F401, PLC0415
+    import app.procurement.models  # noqa: F401, PLC0415
 
     # 필요한 모델을 임포트해서 Base.metadata 에 등록
     import app.tenancy.models  # noqa: F401, PLC0415
-    import app.auth.models  # noqa: F401, PLC0415
-    import app.procurement.models  # noqa: F401, PLC0415
+    from app.models.base import Base  # noqa: PLC0415
 
     engine = create_async_engine("sqlite+aiosqlite:///:memory:", echo=False)
     async with engine.begin() as conn:
