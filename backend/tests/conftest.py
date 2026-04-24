@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/15")
 os.environ.setdefault("ENVIRONMENT", "local")
-os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-tests-only")
+os.environ.setdefault("JWT_SECRET", "test-jwt-secret-for-tests-only-32-bytes")
 os.environ.setdefault("KAKAO_CLIENT_ID", "test-kakao-id")
 os.environ.setdefault("KAKAO_CLIENT_SECRET", "test-kakao-secret")
 os.environ.setdefault("NAVER_OAUTH_CLIENT_ID", "test-naver-id")
